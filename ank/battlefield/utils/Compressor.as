@@ -49,36 +49,36 @@ class ank.battlefield.utils.Compressor extends ank.utils.Compressor
       {
          nPermanentLevel = Number(nPermanentLevel);
       }
-      var _loc5_ = new ank.battlefield.datacenter.Cell();
-      var _loc6_ = sData.split("");
-      var _loc7_ = _loc6_.length - 1;
-      var _loc8_ = [];
-      while(_loc7_ >= 0)
+      var oCell = new ank.battlefield.datacenter.Cell();
+      var aChars = sData.split("");
+      var i = aChars.length - 1;
+      var aCodes = [];
+      while(i >= 0)
       {
-         _loc8_[_loc7_] = ank.utils.Compressor._self._hashCodes[_loc6_[_loc7_]];
-         _loc7_ = _loc7_ - 1;
+         aCodes[i] = ank.utils.Compressor._self._hashCodes[aChars[i]];
+         i = i - 1;
       }
-      _loc5_.active = !((_loc8_[0] & 0x20) >> 5) ? false : true;
-      if(_loc5_.active || bForced)
+      oCell.active = !((aCodes[0] & 0x20) >> 5) ? false : true;
+      if(oCell.active || bForced)
       {
-         _loc5_.nPermanentLevel = nPermanentLevel;
-         _loc5_.lineOfSight = !(_loc8_[0] & 1) ? false : true;
-         _loc5_.layerGroundRot = (_loc8_[1] & 0x30) >> 4;
-         _loc5_.groundLevel = _loc8_[1] & 0x0F;
-         _loc5_.movement = (_loc8_[2] & 0x38) >> 3;
-         _loc5_.layerGroundNum = ((_loc8_[0] & 0x18) << 6) + ((_loc8_[2] & 7) << 6) + _loc8_[3];
-         _loc5_.groundSlope = (_loc8_[4] & 0x3C) >> 2;
-         _loc5_.layerGroundFlip = !((_loc8_[4] & 2) >> 1) ? false : true;
-         _loc5_.layerObject1Num = ((_loc8_[0] & 4) << 11) + ((_loc8_[4] & 1) << 12) + (_loc8_[5] << 6) + _loc8_[6];
-         _loc5_.layerObject1Rot = (_loc8_[7] & 0x30) >> 4;
-         _loc5_.layerObject1Flip = !((_loc8_[7] & 8) >> 3) ? false : true;
-         _loc5_.layerObject2Flip = !((_loc8_[7] & 4) >> 2) ? false : true;
-         _loc5_.layerObject2Interactive = !((_loc8_[7] & 2) >> 1) ? false : true;
-         _loc5_.layerObject2Num = ((_loc8_[0] & 2) << 12) + ((_loc8_[7] & 1) << 12) + (_loc8_[8] << 6) + _loc8_[9];
-         _loc5_.layerObjectExternal = "";
-         _loc5_.layerObjectExternalInteractive = false;
+         oCell.nPermanentLevel = nPermanentLevel;
+         oCell.lineOfSight = !(aCodes[0] & 1) ? false : true;
+         oCell.layerGroundRot = (aCodes[1] & 0x30) >> 4;
+         oCell.groundLevel = aCodes[1] & 0x0F;
+         oCell.movement = (aCodes[2] & 0x38) >> 3;
+         oCell.layerGroundNum = ((aCodes[0] & 0x18) << 6) + ((aCodes[2] & 7) << 6) + aCodes[3];
+         oCell.groundSlope = (aCodes[4] & 0x3C) >> 2;
+         oCell.layerGroundFlip = !((aCodes[4] & 2) >> 1) ? false : true;
+         oCell.layerObject1Num = ((aCodes[0] & 4) << 11) + ((aCodes[4] & 1) << 12) + (aCodes[5] << 6) + aCodes[6];
+         oCell.layerObject1Rot = (aCodes[7] & 0x30) >> 4;
+         oCell.layerObject1Flip = !((aCodes[7] & 8) >> 3) ? false : true;
+         oCell.layerObject2Flip = !((aCodes[7] & 4) >> 2) ? false : true;
+         oCell.layerObject2Interactive = !((aCodes[7] & 2) >> 1) ? false : true;
+         oCell.layerObject2Num = ((aCodes[0] & 2) << 12) + ((aCodes[7] & 1) << 12) + (aCodes[8] << 6) + aCodes[9];
+         oCell.layerObjectExternal = "";
+         oCell.layerObjectExternalInteractive = false;
       }
-      return _loc5_;
+      return oCell;
    }
    static function compressMap(oMap)
    {
