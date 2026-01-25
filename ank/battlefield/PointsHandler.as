@@ -1,76 +1,142 @@
+/**
+ * Handles the display and management of floating point/damage numbers on the battlefield.
+ * These are typically damage numbers, heals, or other numeric indicators that appear
+ * during combat and float/animate above characters or locations.
+ */
 class ank.battlefield.PointsHandler
 {
-   var _mcBattlefield;
-   var _mcContainer;
-   var _oDatacenter;
-   var _oList;
-   var _incIndex;
+   var battlefieldMovieClip;
+   var containerMovieClip;
+   var datacenterObject;
+   var pointsList;
+   var currentIndexCounter;
    static var MAX_INDEX = 200;
-   function PointsHandler(b, c, d)
+
+   /**
+    * Constructor - initializes the handler with required references
+    * @param battlefieldMc The main battlefield movie clip reference
+    * @param containerMc The container where point movie clips will be created
+    * @param datacenter The datacenter object for accessing game constants
+    */
+   function PointsHandler(battlefieldMc, containerMc, datacenter)
    {
-      this.initialize(b,c,d);
+      this.initialize(battlefieldMc, containerMc, datacenter);
    }
-   function initialize(b, c, d)
+
+   /**
+    * Initializes all member variables
+    * @param battlefieldMc The main battlefield movie clip reference
+    * @param containerMc The container where point movie clips will be created
+    * @param datacenter The datacenter object for accessing game constants
+    */
+   function initialize(battlefieldMc, containerMc, datacenter)
    {
-      this._mcBattlefield = b;
-      this._mcContainer = c;
-      this._oDatacenter = d;
-      this._oList = {};
-      this._incIndex = 0;
+      this.battlefieldMovieClip = battlefieldMc;
+      this.containerMovieClip = containerMc;
+      this.datacenterObject = datacenter;
+      this.pointsList = {};
+      this.currentIndexCounter = 0;
    }
+
+   /**
+    * Clears all point movie clips from the container
+    */
    function clear()
    {
-      for(var k in this._mcContainer)
+      for(var key in this.containerMovieClip)
       {
-         this._mcContainer[k].removeMovieClip();
+         this.containerMovieClip[key].removeMovieClip();
       }
    }
-   function addPoints(sID, nX, nY, sValue, nType)
+
+   /**
+    * Adds a new floating point indicator to the battlefield
+    * @param characterID The unique identifier for the character
+    * @param xPosition The x coordinate where the point should appear
+    * @param yPosition The y coordinate where the point should appear
+    * @param pointValue The numeric value to display (as string)
+    * @param pointType The type of point (determines visual appearance via Constants.getPointClip)
+    */
+   function addPoints(characterID, xPosition, yPosition, pointValue, pointType)
    {
-      var _loc7_ = this.getNextIndex();
-      var _loc8_ = this._mcContainer.getNextHighestDepth();
-      this._mcContainer.createEmptyMovieClip("pt" + _loc7_,_loc8_);
-      var _loc9_ = this._mcContainer["pt" + _loc7_];
-      var _loc10_ = _loc9_.createEmptyMovieClip("clip-pt" + _loc7_,_loc8_);
-      _loc9_._x = nX;
-      _loc9_._y = nY;
-      _loc9_.mc = _loc10_;
-      _loc9_.file = dofus.Constants.getPointClip(nType);
-      _loc9_.value = sValue;
-      _loc9_.sID = sID;
-      _loc9_.thisPath = this;
-      if(this._oList[sID] == undefined)
+      var pointIndex = this.getNextIndex();
+      var depth = this.containerMovieClip.getNextHighestDepth();
+
+      // Create main container movie clip for this point
+      this.containerMovieClip.createEmptyMovieClip("pt" + pointIndex, depth);
+      var pointContainer = this.containerMovieClip["pt" + pointIndex];
+
+      // Create inner clip that will hold the loaded asset
+      var pointClip = pointContainer.createEmptyMovieClip("clip-pt" + pointIndex, depth);
+
+      // Set position
+      pointContainer._x = xPosition;
+      pointContainer._y = yPosition;
+
+      // Store references and metadata
+      pointContainer.mc = pointClip;
+      pointContainer.file = dofus.Constants.getPointClip(pointType);
+      pointContainer.value = pointValue;
+      pointContainer.characterID = characterID;
+      pointContainer.thisPath = this;
+
+      // Initialize points array for this character if it doesn't exist
+      if(this.pointsList[characterID] == undefined)
       {
-         this._oList[sID] = [];
+         this.pointsList[characterID] = [];
       }
-      this._oList[sID].push(_loc9_);
-      if(this._oList[sID].length == 1)
+
+      // Add the point to the queue for this character
+      this.pointsList[characterID].push(pointContainer);
+
+      // If this is the first point in the queue, start loading it
+      if(this.pointsList[characterID].length == 1)
       {
-         this.loadPointClip(_loc9_);
+         this.loadPointClip(pointContainer);
       }
    }
-   function getNextIndex(Void)
+
+   /**
+    * Gets the next index in a cycling sequence (0 to MAX_INDEX)
+    * This prevents index overflow by resetting when the max is exceeded
+    * @return The next index value
+    */
+   function getNextIndex()
    {
-      this._incIndex = this._incIndex + 1;
-      if(this._incIndex > ank.battlefield.PointsHandler.MAX_INDEX)
+      this.currentIndexCounter = this.currentIndexCounter + 1;
+      if(this.currentIndexCounter > ank.battlefield.PointsHandler.MAX_INDEX)
       {
-         this._incIndex = 0;
+         this.currentIndexCounter = 0;
       }
-      return this._incIndex;
+      return this.currentIndexCounter;
    }
-   function loadPointClip(oPoint)
+
+   /**
+    * Loads the actual visual asset for a point movie clip
+    * @param pointContainer The point container object to load the clip into
+    */
+   function loadPointClip(pointContainer)
    {
-      var _loc3_ = new MovieClipLoader();
-      _loc3_.loadClip(oPoint.file,oPoint.mc);
+      var loader = new MovieClipLoader();
+      loader.loadClip(pointContainer.file, pointContainer.mc);
    }
-   function onAnimateFinished(sID)
+
+   /**
+    * Called when a point animation finishes, processes the next point in queue
+    * @param characterID The character whose point animation finished
+    */
+   function onAnimateFinished(characterID)
    {
-      var _loc3_ = this._oList[sID];
-      _loc3_.shift();
-      if(_loc3_.length != 0)
+      var characterPoints = this.pointsList[characterID];
+
+      // Remove the current (finished) point from the queue
+      characterPoints.shift();
+
+      // If there are more points in the queue, load the next one
+      if(characterPoints.length != 0)
       {
-         var _loc4_ = _loc3_[0];
-         this.loadPointClip(_loc4_);
+         var nextPoint = characterPoints[0];
+         this.loadPointClip(nextPoint);
       }
    }
 }

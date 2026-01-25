@@ -65,11 +65,11 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
    }
    static function main(mcRoot)
    {
-      var _loc3_ = _global.API;
-      if(_loc3_ != undefined)
+      var oAPI = _global.API;
+      if(oAPI != undefined)
       {
-         var _loc4_ = _loc3_.kernel;
-         _loc4_.setQuality(_loc4_.OptionsManager.getOption("DefaultQuality"));
+         var oKernel = oAPI.kernel;
+         oKernel.setQuality(oKernel.OptionsManager.getOption("DefaultQuality"));
       }
       if(_root.dofusPreLoaderMc == undefined)
       {
@@ -78,9 +78,9 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
       System.security.allowDomain("*");
       fscommand("trapallkeys","true");
       fscommand("CustomerStart","");
-      var _loc5_ = _root.electron;
+      var oElectron = _root.electron;
       _root = mcRoot;
-      _root.electron = _loc5_;
+      _root.electron = oElectron;
       dofus.DofusLoader.registerAllClasses();
       _root._quality = "HIGH";
       if(dofus.Constants.TRIPLEFRAMERATE)
@@ -101,17 +101,17 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
       {
          if(bSuccess)
          {
-            var _loc3_ = this.firstChild.firstChild;
-            if(_loc3_ != null && this.childNodes.length > 0)
+            var oNode = this.firstChild.firstChild;
+            if(oNode != null && this.childNodes.length > 0)
             {
-               while(_loc3_ != null)
+               while(oNode != null)
                {
-                  if(_loc3_.nodeName == "loadingbanner")
+                  if(oNode.nodeName == "loadingbanner")
                   {
-                     var _loc4_ = _loc3_.attributes.file;
-                     xDoc.parent._aLoadingBannersFiles.push(_loc4_);
+                     var sFile = oNode.attributes.file;
+                     xDoc.parent._aLoadingBannersFiles.push(sFile);
                   }
-                  _loc3_ = _loc3_.nextSibling;
+                  oNode = oNode.nextSibling;
                }
             }
          }
@@ -179,9 +179,9 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
    }
    function initTexts()
    {
-      var _loc2_ = new dofus.DofusLoaderLogger();
-      this.LANG_TEXT = _loc2_.langs;
-      this.ERRORS = _loc2_.errors;
+      var oLogger = new dofus.DofusLoaderLogger();
+      this.LANG_TEXT = oLogger.langs;
+      this.ERRORS = oLogger.errors;
    }
    static function registerAllClasses()
    {
@@ -244,16 +244,16 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
    }
    function getText(key, aParams)
    {
-      var _loc4_ = this.LANG_TEXT[key][_global.CONFIG.language];
-      if(_loc4_ == undefined || _loc4_.length == 0)
+      var sText = this.LANG_TEXT[key][_global.CONFIG.language];
+      if(sText == undefined || sText.length == 0)
       {
-         _loc4_ = _global[dofus.Constants.GLOBAL_SO_LANG_NAME + "_" + dofus.utils.DofusTranslator.STANDARD_DATA_BANK].data[key];
+         sText = _global[dofus.Constants.GLOBAL_SO_LANG_NAME + "_" + dofus.utils.DofusTranslator.STANDARD_DATA_BANK].data[key];
       }
-      if(_loc4_ == undefined || _loc4_.length == 0)
+      if(sText == undefined || sText.length == 0)
       {
-         _loc4_ = this.LANG_TEXT[key].fr;
+         sText = this.LANG_TEXT[key].fr;
       }
-      return this.replaceText(_loc4_,aParams);
+      return this.replaceText(sText,aParams);
    }
    function replaceText(sText, aParams)
    {
@@ -261,16 +261,16 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
       {
          aParams = [];
       }
-      var _loc4_ = [];
-      var _loc5_ = [];
-      var _loc6_ = 0;
-      while(_loc6_ < aParams.length)
+      var aSearchPatterns = [];
+      var aReplaceValues = [];
+      var nIndex = 0;
+      while(nIndex < aParams.length)
       {
-         _loc4_.push("%" + (_loc6_ + 1));
-         _loc5_.push(aParams[_loc6_]);
-         _loc6_ = _loc6_ + 1;
+         aSearchPatterns.push("%" + (nIndex + 1));
+         aReplaceValues.push(aParams[nIndex]);
+         nIndex = nIndex + 1;
       }
-      return new ank.utils.ExtendedString(sText).replace(_loc4_,_loc5_);
+      return new ank.utils.ExtendedString(sText).replace(aSearchPatterns,aReplaceValues);
    }
    function clearlogs()
    {
@@ -328,14 +328,14 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
    {
       if(bShow)
       {
-         var _loc3_ = 10079232;
-         var _loc4_ = (_loc3_ & 0xFF0000) >> 16;
-         var _loc5_ = (_loc3_ & 0xFF00) >> 8;
-         var _loc6_ = _loc3_ & 0xFF;
-         var _loc7_ = new Color(this._mcTotalProgressBarGroup.mcProgressBar);
-         var _loc8_ = {};
-         _loc8_ = {ra:"0",rb:_loc4_,ga:"0",gb:_loc5_,ba:"0",bb:_loc6_,aa:"100",ab:"0"};
-         _loc7_.setTransform(_loc8_);
+         var nColor = 10079232;
+         var nRed = (nColor & 0xFF0000) >> 16;
+         var nGreen = (nColor & 0xFF00) >> 8;
+         var nBlue = nColor & 0xFF;
+         var oColorObj = new Color(this._mcTotalProgressBarGroup.mcProgressBar);
+         var oColorTransform = {};
+         oColorTransform = {ra:"0",rb:nRed,ga:"0",gb:nGreen,ba:"0",bb:nBlue,aa:"100",ab:"0"};
+         oColorObj.setTransform(oColorTransform);
          this._mcLoadingWindow._visible = true;
          this._mcTotalProgressBarGroup._visible = true;
       }
@@ -388,18 +388,18 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
    }
    function criticalError(sError, sTab, bShowClearCacheButton, aParams, sFrom)
    {
-      var _loc7_ = this.ERRORS[sError];
+      var oErrorData = this.ERRORS[sError];
       this.ERRORS.current = sError;
       this.ERRORS.from = sFrom;
-      var _loc8_ = this.replaceText(_loc7_[_global.CONFIG.language],aParams);
-      if(_loc8_ == undefined || _loc8_.length == 0)
+      var sErrorMessage = this.replaceText(oErrorData[_global.CONFIG.language],aParams);
+      if(sErrorMessage == undefined || sErrorMessage.length == 0)
       {
-         _loc8_ = this.replaceText(_loc7_.fr,aParams);
+         sErrorMessage = this.replaceText(oErrorData.fr,aParams);
       }
-      this._cLoggerError.log("<b>" + this.getText("ERROR") + "</b> : " + _loc8_,"#FF0000","#DD0000");
-      var _loc9_ = "<u><a href=\'" + _loc7_["link" + _global.CONFIG.language] + "\' target=\'_blank\'>" + this.getText("LINK_HELP") + "</a></u>";
-      this._cLoggerError.log(_loc9_,"#FF0000","#DD0000");
-      this.addToSaveLog(sTab + "<b>" + this.getText("ERROR") + "</b> : " + _loc8_);
+      this._cLoggerError.log("<b>" + this.getText("ERROR") + "</b> : " + sErrorMessage,"#FF0000","#DD0000");
+      var sHelpLink = "<u><a href=\'" + oErrorData["link" + _global.CONFIG.language] + "\' target=\'_blank\'>" + this.getText("LINK_HELP") + "</a></u>";
+      this._cLoggerError.log(sHelpLink,"#FF0000","#DD0000");
+      this.addToSaveLog(sTab + "<b>" + this.getText("ERROR") + "</b> : " + sErrorMessage);
       this.showCopyLogsButton(true);
       this.showShowLogsButton(true);
       this.showContinueButton(true);
@@ -455,39 +455,39 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
       }
       else
       {
-         var _loc3_ = bShow != undefined ? bShow : !this._bBannerDisplay;
-         if(_loc3_)
+         var bShowBanner = bShow != undefined ? bShow : !this._bBannerDisplay;
+         if(bShowBanner)
          {
             if(this._bBannerDisplay)
             {
                return undefined;
             }
-            var _loc4_ = "";
+            var sEmptyStr = "";
             if(this._aLoadingBannersFiles.length > 0)
             {
-               var _loc6_ = Math.floor(Math.random() * (this._aLoadingBannersFiles.length + 1));
-               if(_loc6_ < this._aLoadingBannersFiles.length)
+               var nRandomIndex = Math.floor(Math.random() * (this._aLoadingBannersFiles.length + 1));
+               if(nRandomIndex < this._aLoadingBannersFiles.length)
                {
-                  var _loc7_ = this._aLoadingBannersFiles[_loc6_];
-                  var _loc5_ = this.createEmptyMovieClip("_mcBanner",this.getNextHighestDepth());
-                  org.utils.Bitmap.loadBitmapSmoothed(dofus.Constants.LOADING_BANNERS_PATH + _loc7_,_loc5_);
+                  var sBannerFile = this._aLoadingBannersFiles[nRandomIndex];
+                  var mcBanner = this.createEmptyMovieClip("_mcBanner",this.getNextHighestDepth());
+                  org.utils.Bitmap.loadBitmapSmoothed(dofus.Constants.LOADING_BANNERS_PATH + sBannerFile,mcBanner);
                }
             }
-            var _loc8_ = "";
-            if(!_loc5_)
+            var sLangStr = "";
+            if(!mcBanner)
             {
-               _loc5_ = this.attachMovie("LoadingBanner_" + _global.CONFIG.language,"_mcBanner",this.getNextHighestDepth(),this._mcBannerPlacer);
+               mcBanner = this.attachMovie("LoadingBanner_" + _global.CONFIG.language,"_mcBanner",this.getNextHighestDepth(),this._mcBannerPlacer);
             }
-            if(!_loc5_)
+            if(!mcBanner)
             {
-               _loc5_ = this.attachMovie("LoadingBanner_" + _loc8_,"_mcBanner",this.getNextHighestDepth(),this._mcBannerPlacer);
+               mcBanner = this.attachMovie("LoadingBanner_" + sLangStr,"_mcBanner",this.getNextHighestDepth(),this._mcBannerPlacer);
             }
-            if(!_loc5_)
+            if(!mcBanner)
             {
-               _loc5_ = this.attachMovie("LoadingBanner","_mcBanner",this.getNextHighestDepth(),this._mcBannerPlacer);
+               mcBanner = this.attachMovie("LoadingBanner","_mcBanner",this.getNextHighestDepth(),this._mcBannerPlacer);
             }
-            _loc5_.cacheAsBitmap = true;
-            _loc5_.swapDepths(this._mcBannerPlacer);
+            mcBanner.cacheAsBitmap = true;
+            mcBanner.swapDepths(this._mcBannerPlacer);
          }
          else
          {
@@ -498,139 +498,139 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
             this._mcBanner.swapDepths(this._mcBannerPlacer);
             this._mcBanner.removeMovieClip();
          }
-         this._bBannerDisplay = _loc3_;
+         this._bBannerDisplay = bShowBanner;
       }
    }
    function copyAndOrganizeDataServersForDataBank(nDataBank)
    {
-      var _loc3_ = _global.CONFIG.dataBanks;
-      var _loc4_ = _loc3_[nDataBank].slice(0);
-      var _loc5_ = 0;
-      while(_loc5_ < _loc4_.length)
+      var aAllDataBanks = _global.CONFIG.dataBanks;
+      var aServerList = aAllDataBanks[nDataBank].slice(0);
+      var nIndex = 0;
+      while(nIndex < aServerList.length)
       {
-         var _loc6_ = _loc4_[_loc5_];
-         if(_loc6_.nPriority == undefined || _global.isNaN(_loc6_.nPriority))
+         var oServer = aServerList[nIndex];
+         if(oServer.nPriority == undefined || _global.isNaN(oServer.nPriority))
          {
-            _loc6_.nPriority = 0;
+            oServer.nPriority = 0;
          }
-         var _loc7_ = _loc6_.priority;
-         _loc6_.rand = random(99999);
-         _loc5_ = _loc5_ + 1;
+         var nPriority = oServer.priority;
+         oServer.rand = random(99999);
+         nIndex = nIndex + 1;
       }
-      _loc4_.sortOn(["priority","rand"],Array.DESCENDING);
-      var _loc8_ = 0;
-      while(_loc8_ < _loc4_.length)
+      aServerList.sortOn(["priority","rand"],Array.DESCENDING);
+      var nCount = 0;
+      while(nCount < aServerList.length)
       {
-         _loc8_ = _loc8_ + 1;
+         nCount = nCount + 1;
       }
-      return _loc4_;
+      return aServerList;
    }
    function copyAndOrganizeDataBanks()
    {
-      var _loc2_ = [];
-      var _loc3_ = _global.CONFIG.dataBanks;
-      var _loc4_ = 0;
-      while(_loc4_ < _loc3_.length)
+      var aDataBanksCopy = [];
+      var aAllDataBanks = _global.CONFIG.dataBanks;
+      var nBankIndex = 0;
+      while(nBankIndex < aAllDataBanks.length)
       {
-         _loc2_[_loc4_] = _loc3_[_loc4_].slice(0);
-         _loc4_ = _loc4_ + 1;
+         aDataBanksCopy[nBankIndex] = aAllDataBanks[nBankIndex].slice(0);
+         nBankIndex = nBankIndex + 1;
       }
-      var _loc5_ = 0;
-      while(_loc5_ < _loc2_.length)
+      var nOuterIndex = 0;
+      while(nOuterIndex < aDataBanksCopy.length)
       {
-         var _loc6_ = _loc2_[_loc5_];
-         var _loc7_ = 0;
-         while(_loc7_ < _loc6_.length)
+         var aCurrentBank = aDataBanksCopy[nOuterIndex];
+         var nInnerIndex = 0;
+         while(nInnerIndex < aCurrentBank.length)
          {
-            var _loc8_ = _loc6_[_loc7_];
-            if(_loc8_.nPriority == undefined || _global.isNaN(_loc8_.nPriority))
+            var oCurrentServer = aCurrentBank[nInnerIndex];
+            if(oCurrentServer.nPriority == undefined || _global.isNaN(oCurrentServer.nPriority))
             {
-               _loc8_.nPriority = 0;
+               oCurrentServer.nPriority = 0;
             }
-            var _loc9_ = _loc8_.priority;
-            _loc8_.rand = random(99999);
-            _loc7_ = _loc7_ + 1;
+            var nPriority = oCurrentServer.priority;
+            oCurrentServer.rand = random(99999);
+            nInnerIndex = nInnerIndex + 1;
          }
-         _loc6_.sortOn(["priority","rand"],Array.DESCENDING);
-         var _loc10_ = 0;
-         while(_loc10_ < _loc6_.length)
+         aCurrentBank.sortOn(["priority","rand"],Array.DESCENDING);
+         var nCount = 0;
+         while(nCount < aCurrentBank.length)
          {
-            _loc10_ = _loc10_ + 1;
+            nCount = nCount + 1;
          }
-         _loc5_ = _loc5_ + 1;
+         nOuterIndex = nOuterIndex + 1;
       }
-      return _loc2_;
+      return aDataBanksCopy;
    }
    function checkOccurences()
    {
-      var _loc2_ = _global.API.lang.getConfigText("MAXIMUM_CLIENT_OCCURENCES");
-      if(_loc2_ == undefined || (_global.isNaN(_loc2_) || _loc2_ < 1))
+      var nMaxOccurrences = _global.API.lang.getConfigText("MAXIMUM_CLIENT_OCCURENCES");
+      if(nMaxOccurrences == undefined || (_global.isNaN(nMaxOccurrences) || nMaxOccurrences < 1))
       {
          return true;
       }
-      var _loc3_ = this.getOccurencesSharedObject().data.occ;
-      var _loc4_ = [];
-      var _loc5_ = 0;
-      while(_loc5_ < _loc3_.length)
+      var aOccurrences = this.getOccurencesSharedObject().data.occ;
+      var aValidOccurrences = [];
+      var nIndex = 0;
+      while(nIndex < aOccurrences.length)
       {
-         if(_loc3_[_loc5_].tick + dofus.Constants.MAX_OCCURENCE_DELAY > new Date().getTime())
+         if(aOccurrences[nIndex].tick + dofus.Constants.MAX_OCCURENCE_DELAY > new Date().getTime())
          {
-            _loc4_.push(_loc3_[_loc5_]);
+            aValidOccurrences.push(aOccurrences[nIndex]);
          }
-         _loc5_ = _loc5_ + 1;
+         nIndex = nIndex + 1;
       }
-      var _loc6_ = _loc4_.length;
-      if(!_global.API.datacenter.Player.isAuthorized && _loc6_ + 1 > _loc2_)
+      var nCurrentCount = aValidOccurrences.length;
+      if(!_global.API.datacenter.Player.isAuthorized && nCurrentCount + 1 > nMaxOccurrences)
       {
          this.criticalError("TOO_MANY_OCCURENCES",this.TABULATION,false);
          return false;
       }
       this._nOccurenceId = Math.round(Math.random() * 1000);
-      _loc4_.push({id:this._nOccurenceId,tick:new Date().getTime()});
-      this.getOccurencesSharedObject().data.occ = _loc4_;
+      aValidOccurrences.push({id:this._nOccurenceId,tick:new Date().getTime()});
+      this.getOccurencesSharedObject().data.occ = aValidOccurrences;
       _global.setInterval(this,"refreshOccurenceTick",dofus.Constants.OCCURENCE_REFRESH);
       return true;
    }
    function refreshOccurenceTick()
    {
-      var _loc2_ = this.getOccurencesSharedObject().data.occ;
-      var _loc3_ = 0;
-      while(_loc3_ < _loc2_.length)
+      var aOccurrences = this.getOccurencesSharedObject().data.occ;
+      var nIndex = 0;
+      while(nIndex < aOccurrences.length)
       {
-         if(_loc2_[_loc3_].id == this._nOccurenceId)
+         if(aOccurrences[nIndex].id == this._nOccurenceId)
          {
-            _loc2_[_loc3_].tick = new Date().getTime();
+            aOccurrences[nIndex].tick = new Date().getTime();
             break;
          }
-         _loc3_ = _loc3_ + 1;
+         nIndex = nIndex + 1;
       }
-      this.getOccurencesSharedObject().data.occ = _loc2_;
+      this.getOccurencesSharedObject().data.occ = aOccurrences;
    }
    function checkFlashPlayer()
    {
-      var _loc2_ = System.capabilities.version;
-      var _loc3_ = Number(_loc2_.split(" ")[1].split(",")[0]);
+      var sFlashVersion = System.capabilities.version;
+      var nMajorVersion = Number(sFlashVersion.split(" ")[1].split(",")[0]);
       if(_root.electron != undefined)
       {
-         var _loc5_ = String(flash.external.ExternalInterface.call("getElectronVersion"));
-         var _loc6_ = String(flash.external.ExternalInterface.call("getNodejsVersion"));
-         var _loc4_ = " (Electron <b>" + _loc5_ + "</b> | Node.js <b>" + _loc6_ + "</b>)";
+         var sElectronVersion = String(flash.external.ExternalInterface.call("getElectronVersion"));
+         var sNodejsVersion = String(flash.external.ExternalInterface.call("getNodejsVersion"));
+         var sVersionInfo = " (Electron <b>" + sElectronVersion + "</b> | Node.js <b>" + sNodejsVersion + "</b>)";
       }
       else
       {
-         _loc4_ = System.capabilities.playerType.length != 0 ? " (" + System.capabilities.playerType + ")" : " ";
+         sVersionInfo = System.capabilities.playerType.length != 0 ? " (" + System.capabilities.playerType + ")" : " ";
       }
-      var _loc7_ = "Flash player" + _loc4_ + " <b>" + _loc2_ + "</b>";
-      this.log(this.TABULATION + _loc7_);
+      var sLogMessage = "Flash player" + sVersionInfo + " <b>" + sFlashVersion + "</b>";
+      this.log(this.TABULATION + sLogMessage);
       if(dofus.Constants.USE_JS_LOG && _global.CONFIG.isNewAccount)
       {
-         this.getURL("JavaScript:WriteLog(\'checkFlashPlayer;" + _loc3_ + "\')");
+         this.getURL("JavaScript:WriteLog(\'checkFlashPlayer;" + nMajorVersion + "\')");
          this.getURL("JavaScript:WriteLog(\'versionDate;" + dofus.Constants.VERSIONDATE + "\')");
       }
-      if(_loc3_ >= 8)
+      if(nMajorVersion >= 8)
       {
-         var _loc8_ = System.security.sandboxType;
-         if(_loc8_ != "localTrusted" && _loc8_ != "remote")
+         var sSandboxType = System.security.sandboxType;
+         if(sSandboxType != "localTrusted" && sSandboxType != "remote")
          {
             this.criticalError("BAD_FLASH_SANDBOX",this.TABULATION,false);
             return false;
@@ -663,14 +663,14 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
             switch(this.ERRORS.current)
             {
                case "CHECK_LAST_VERSION_FAILED":
-                  var _loc3_ = new LoadVars();
-                  _loc3_.f = "";
-                  this.onCheckLanguage(true,_loc3_,"","");
+                  var oLoadVars1 = new LoadVars();
+                  oLoadVars1.f = "";
+                  this.onCheckLanguage(true,oLoadVars1,"","");
                   break;
                case "CHECK_LAST_VERSION_FAILED":
-                  var _loc4_ = new LoadVars();
-                  _loc4_.f = "";
-                  this.onCheckLanguage(true,_loc4_,"","");
+                  var oLoadVars2 = new LoadVars();
+                  oLoadVars2.f = "";
+                  this.onCheckLanguage(true,oLoadVars2,"","");
             }
             break;
          case this._btnNext:
@@ -719,31 +719,31 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
    }
    function reboot()
    {
-      var _loc2_ = 0;
-      while(_loc2_ < dofus.Constants.MODULES_LIST.length)
+      var nIndex = 0;
+      while(nIndex < dofus.Constants.MODULES_LIST.length)
       {
-         this._mclLoader.unloadClip(_global["MODULE_" + dofus.Constants.MODULES_LIST[_loc2_][4]]);
-         _loc2_ = _loc2_ + 1;
+         this._mclLoader.unloadClip(_global["MODULE_" + dofus.Constants.MODULES_LIST[nIndex][4]]);
+         nIndex = nIndex + 1;
       }
       dofus.DofusCore.getClip().removeMovieClip();
       this.initLoader(_root);
    }
    function clearCache()
    {
-      var _loc2_ = this.getOptionsSharedObject();
-      var _loc3_ = _loc2_.data.dataBanksCount;
-      if(_loc3_ == undefined || _global.isNaN(_loc3_))
+      var oOptionsSharedObject = this.getOptionsSharedObject();
+      var nDatabankCount = oOptionsSharedObject.data.dataBanksCount;
+      if(nDatabankCount == undefined || _global.isNaN(nDatabankCount))
       {
          return undefined;
       }
-      var _loc4_ = 0;
-      while(_loc4_ < _loc3_)
+      var nIndex = 0;
+      while(nIndex < nDatabankCount)
       {
-         var _loc5_ = this.getLangSharedObject(_loc4_);
-         var _loc6_ = this.getXtraSharedObject(_loc4_);
-         _loc5_.clear();
-         _loc6_.clear();
-         _loc4_ = _loc4_ + 1;
+         var oLangSharedObject = this.getLangSharedObject(nIndex);
+         var oXtraSharedObject = this.getXtraSharedObject(nIndex);
+         oLangSharedObject.clear();
+         oXtraSharedObject.clear();
+         nIndex = nIndex + 1;
       }
    }
    function showLoader(bShow, bNotClear)
@@ -773,17 +773,17 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
       this.showLoader(true);
       this.moveProgressBar(0);
       this.logTitle(this.getText("LOADING_CONFIG_FILE"));
-      var _loc2_ = new XML();
+      var xConfigDocument = new XML();
       var loader = this;
-      _loc2_.ignoreWhite = true;
-      _loc2_.onLoad = function(bSuccess)
+      xConfigDocument.ignoreWhite = true;
+      xConfigDocument.onLoad = function(bSuccess)
       {
          loader.onConfigLoaded(bSuccess,this);
       };
       this.showWaitBar(true);
-      if(!dofus.Electron.getUserDataTextFileXMLContent(_loc2_,dofus.Constants.CONFIG_XML_FILE))
+      if(!dofus.Electron.getUserDataTextFileXMLContent(xConfigDocument,dofus.Constants.CONFIG_XML_FILE))
       {
-         _loc2_.load(dofus.Constants.CONFIG_XML_FILE);
+         xConfigDocument.load(dofus.Constants.CONFIG_XML_FILE);
       }
    }
    function onConfigLoaded(bSuccess, xDoc)
@@ -796,36 +796,36 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
       if(bSuccess)
       {
          this.setTotalBarValue(50,100);
-         var _loc4_ = xDoc.firstChild.firstChild;
-         if(xDoc.childNodes.length == 0 || _loc4_ == null)
+         var xConfigNode = xDoc.firstChild.firstChild;
+         if(xDoc.childNodes.length == 0 || xConfigNode == null)
          {
             this.criticalError("CORRUPT_CONFIG_FILE",this.TABULATION,false);
             return undefined;
          }
          _global.CONFIG.cacheAsBitmap = [];
-         var _loc5_ = new ank.utils.ExtendedArray();
-         var _loc6_ = false;
-         while(_loc4_ != null)
+         var aConfigurations = new ank.utils.ExtendedArray();
+         var bProcessing = false;
+         while(xConfigNode != null)
          {
-            switch(_loc4_.nodeName)
+            switch(xConfigNode.nodeName)
             {
                case "delay":
-                  _global.CONFIG.delay = _loc4_.attributes.value;
+                  _global.CONFIG.delay = xConfigNode.attributes.value;
                   break;
                case "rdelay":
-                  _global.CONFIG.rdelay = _loc4_.attributes.value;
+                  _global.CONFIG.rdelay = xConfigNode.attributes.value;
                   break;
                case "rcount":
-                  _global.CONFIG.rcount = _loc4_.attributes.value;
+                  _global.CONFIG.rcount = xConfigNode.attributes.value;
                   break;
                case "hardcore":
                   _global.CONFIG.onlyHardcore = true;
                   break;
                case "streaming":
                   _global.CONFIG.isStreaming = true;
-                  if(_loc4_.attributes.method)
+                  if(xConfigNode.attributes.method)
                   {
-                     _global.CONFIG.streamingMethod = _loc4_.attributes.method;
+                     _global.CONFIG.streamingMethod = xConfigNode.attributes.method;
                   }
                   else
                   {
@@ -837,138 +837,138 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
                   _global.CONFIG.isExpo = true;
                   break;
                case "conf":
-                  var _loc7_ = _loc4_.attributes.name;
-                  var _loc8_ = _loc4_.attributes.type;
-                  if(_loc7_ != undefined && (dofus.Constants.TEST != true && _loc8_ != "test" || dofus.Constants.TEST == true && _loc8_ == "test"))
+                  var sConfName = xConfigNode.attributes.name;
+                  var sConfType = xConfigNode.attributes.type;
+                  if(sConfName != undefined && (dofus.Constants.TEST != true && sConfType != "test" || dofus.Constants.TEST == true && sConfType == "test"))
                   {
-                     var _loc9_ = {};
-                     _loc9_.name = _loc7_;
-                     var _loc10_ = Number(_loc4_.attributes.zaapconnectport);
-                     _loc9_.zaapConnectPort = !(_loc10_ == undefined || _global.isNaN(_loc10_)) ? _loc10_ : dofus.ZaapConnect.TCP_DEFAULT_PORT;
-                     _loc9_.debug = _loc4_.attributes.boo == "1";
-                     _loc9_.debugRequests = _loc4_.attributes.debugrequests == "1" || _loc4_.attributes.debugrequests == "2";
-                     _loc9_.logRequests = _loc4_.attributes.debugrequests == "2";
-                     _loc9_.openRetroChat = _loc4_.attributes.openRetroChat == "1";
-                     _loc9_.openRetroConsole = _loc4_.attributes.openRetroConsole == "1";
-                     _loc9_.connexionServers = new ank.utils.ExtendedArray();
-                     _loc9_.dataBanks = [];
-                     var _loc11_ = _loc9_.dataBanks;
-                     var _loc12_ = _loc4_.firstChild;
-                     while(_loc12_ != null)
+                     var oConfiguration = {};
+                     oConfiguration.name = sConfName;
+                     var nZaapPort = Number(xConfigNode.attributes.zaapconnectport);
+                     oConfiguration.zaapConnectPort = !(nZaapPort == undefined || _global.isNaN(nZaapPort)) ? nZaapPort : dofus.ZaapConnect.TCP_DEFAULT_PORT;
+                     oConfiguration.debug = xConfigNode.attributes.boo == "1";
+                     oConfiguration.debugRequests = xConfigNode.attributes.debugrequests == "1" || xConfigNode.attributes.debugrequests == "2";
+                     oConfiguration.logRequests = xConfigNode.attributes.debugrequests == "2";
+                     oConfiguration.openRetroChat = xConfigNode.attributes.openRetroChat == "1";
+                     oConfiguration.openRetroConsole = xConfigNode.attributes.openRetroConsole == "1";
+                     oConfiguration.connexionServers = new ank.utils.ExtendedArray();
+                     oConfiguration.dataBanks = [];
+                     var aDataBanks = oConfiguration.dataBanks;
+                     var xDataBankNode = xConfigNode.firstChild;
+                     while(xDataBankNode != null)
                      {
-                        switch(_loc12_.nodeName)
+                        switch(xDataBankNode.nodeName)
                         {
                            case "databank":
-                              var _loc13_ = Number(_loc12_.attributes.id);
-                              if(_global.isNaN(_loc13_))
+                              var nDatabankId = Number(xDataBankNode.attributes.id);
+                              if(_global.isNaN(nDatabankId))
                               {
                                  break;
                               }
-                              var _loc14_ = _loc11_[_loc13_];
-                              if(_loc14_ == undefined)
+                              var aCurrentBank = aDataBanks[nDatabankId];
+                              if(aCurrentBank == undefined)
                               {
-                                 _loc14_ = [];
-                                 _loc11_[_loc13_] = _loc14_;
+                                 aCurrentBank = [];
+                                 aDataBanks[nDatabankId] = aCurrentBank;
                               }
-                              var _loc15_ = _loc12_.firstChild;
-                              while(_loc15_ != null)
+                              var xServerNode = xDataBankNode.firstChild;
+                              while(xServerNode != null)
                               {
-                                 var _loc0_ = null;
-                                 if((_loc0_ = _loc15_.nodeName) === "dataserver")
+                                 var xNodeName = null;
+                                 if((xNodeName = xServerNode.nodeName) === "dataserver")
                                  {
-                                    var _loc16_ = _loc15_.attributes.url;
-                                    var _loc17_ = _loc15_.attributes.type;
-                                    var _loc18_ = Number(_loc15_.attributes.priority);
-                                    if(_loc16_ != undefined && _loc16_ != "")
+                                    var sServerUrl = xServerNode.attributes.url;
+                                    var sServerType = xServerNode.attributes.type;
+                                    var nPriority = Number(xServerNode.attributes.priority);
+                                    if(sServerUrl != undefined && sServerUrl != "")
                                     {
-                                       _loc14_.push({url:_loc16_,type:_loc17_,priority:_loc18_,dataBankId:_loc13_});
-                                       System.security.allowDomain(_loc16_);
+                                       aCurrentBank.push({url:sServerUrl,type:sServerType,priority:nPriority,dataBankId:nDatabankId});
+                                       System.security.allowDomain(sServerUrl);
                                     }
                                  }
-                                 _loc15_ = _loc15_.nextSibling;
+                                 xServerNode = xServerNode.nextSibling;
                               }
-                              var _loc19_ = this.getOptionsSharedObject();
-                              _loc19_.data.dataBanksCount = _loc14_.length;
-                              _loc19_.flush();
+                              var oOptionsSharedObject = this.getOptionsSharedObject();
+                              oOptionsSharedObject.data.dataBanksCount = aCurrentBank.length;
+                              oOptionsSharedObject.flush();
                               break;
                            case "dataserver":
-                              var _loc20_ = dofus.utils.DofusTranslator.STANDARD_DATA_BANK;
-                              var _loc21_ = _loc11_[_loc20_];
-                              if(_loc21_ == undefined)
+                              var nStandardDatabankId = dofus.utils.DofusTranslator.STANDARD_DATA_BANK;
+                              var aStandardBank = aDataBanks[nStandardDatabankId];
+                              if(aStandardBank == undefined)
                               {
-                                 _loc21_ = [];
-                                 _loc11_[_loc20_] = _loc21_;
+                                 aStandardBank = [];
+                                 aDataBanks[nStandardDatabankId] = aStandardBank;
                               }
-                              var _loc22_ = _loc12_.attributes.url;
-                              var _loc23_ = _loc12_.attributes.type;
-                              var _loc24_ = Number(_loc12_.attributes.priority);
-                              if(_loc22_ != undefined && _loc22_ != "")
+                              var sStandardUrl = xDataBankNode.attributes.url;
+                              var sStandardType = xDataBankNode.attributes.type;
+                              var nStandardPriority = Number(xDataBankNode.attributes.priority);
+                              if(sStandardUrl != undefined && sStandardUrl != "")
                               {
-                                 _loc21_.push({url:_loc22_,type:_loc23_,priority:_loc24_,dataBankId:_loc20_});
-                                 System.security.allowDomain(_loc22_);
+                                 aStandardBank.push({url:sStandardUrl,type:sStandardType,priority:nStandardPriority,dataBankId:nStandardDatabankId});
+                                 System.security.allowDomain(sStandardUrl);
                               }
-                              var _loc25_ = this.getOptionsSharedObject();
-                              _loc25_.data.dataBanksCount = _loc21_.length;
-                              _loc25_.flush();
+                              var oStandardSharedObject = this.getOptionsSharedObject();
+                              oStandardSharedObject.data.dataBanksCount = aStandardBank.length;
+                              oStandardSharedObject.flush();
                               break;
                            case "connserver":
-                              var _loc26_ = _loc12_.attributes.name;
-                              var _loc27_ = _loc12_.attributes.ip;
-                              var _loc28_ = _loc12_.attributes.port;
-                              if(_loc26_ != undefined && (_loc27_ != "" && _loc28_ != undefined))
+                              var sConnServerName = xDataBankNode.attributes.name;
+                              var sConnServerIp = xDataBankNode.attributes.ip;
+                              var sConnServerPort = xDataBankNode.attributes.port;
+                              if(sConnServerName != undefined && (sConnServerIp != "" && sConnServerPort != undefined))
                               {
-                                 _loc9_.connexionServers.push({label:_loc26_,data:{name:_loc26_,ip:_loc27_,port:_loc28_}});
+                                 oConfiguration.connexionServers.push({label:sConnServerName,data:{name:sConnServerName,ip:sConnServerIp,port:sConnServerPort}});
                               }
                               break;
                            default:
-                              this.nonCriticalError(this.getText("UNKNOWN_TYPE_NODE") + " (" + _loc4_.nodeName + ")",this.TABULATION);
+                              this.nonCriticalError(this.getText("UNKNOWN_TYPE_NODE") + " (" + xConfigNode.nodeName + ")",this.TABULATION);
                         }
-                        _loc12_ = _loc12_.nextSibling;
+                        xDataBankNode = xDataBankNode.nextSibling;
                      }
-                     if(_loc11_[dofus.utils.DofusTranslator.STANDARD_DATA_BANK].length > 0)
+                     if(aDataBanks[dofus.utils.DofusTranslator.STANDARD_DATA_BANK].length > 0)
                      {
-                        _loc5_.push({label:_loc9_.name,data:_loc9_});
+                        aConfigurations.push({label:oConfiguration.name,data:oConfiguration});
                      }
                   }
                   break;
                case "languages":
-                  _global.CONFIG.xmlLanguages = _loc4_.attributes.value.split(",");
-                  _global.CONFIG.skipLanguageVerification = _loc4_.attributes.skipcheck == "true" || _loc4_.attributes.skipcheck == "1";
+                  _global.CONFIG.xmlLanguages = xConfigNode.attributes.value.split(",");
+                  _global.CONFIG.skipLanguageVerification = xConfigNode.attributes.skipcheck == "true" || xConfigNode.attributes.skipcheck == "1";
                   break;
                case "cacheasbitmap":
-                  var _loc29_ = _loc4_.firstChild;
-                  while(_loc29_ != null)
+                  var xCacheNode = xConfigNode.firstChild;
+                  while(xCacheNode != null)
                   {
-                     var _loc30_ = _loc29_.attributes.element;
-                     var _loc31_ = _loc29_.attributes.value == "true";
-                     _global.CONFIG.cacheAsBitmap[_loc30_] = _loc31_;
-                     _loc29_ = _loc29_.nextSibling;
+                     var sCacheElement = xCacheNode.attributes.element;
+                     var bCacheValue = xCacheNode.attributes.value == "true";
+                     _global.CONFIG.cacheAsBitmap[sCacheElement] = bCacheValue;
+                     xCacheNode = xCacheNode.nextSibling;
                   }
                   break;
                case "servers":
-                  var _loc32_ = _loc4_.firstChild;
+                  var xServerListNode = xConfigNode.firstChild;
                   _global.CONFIG.customServersIP = [];
-                  while(_loc32_ != null)
+                  while(xServerListNode != null)
                   {
-                     var _loc33_ = _loc32_.attributes.id;
-                     var _loc34_ = _loc32_.attributes.ip;
-                     var _loc35_ = _loc32_.attributes.port;
-                     _global.CONFIG.customServersIP[_loc33_] = {ip:_loc34_,port:_loc35_};
-                     _loc32_ = _loc32_.nextSibling;
+                     var sServerId = xServerListNode.attributes.id;
+                     var sServerIp = xServerListNode.attributes.ip;
+                     var sServerPort = xServerListNode.attributes.port;
+                     _global.CONFIG.customServersIP[sServerId] = {ip:sServerIp,port:sServerPort};
+                     xServerListNode = xServerListNode.nextSibling;
                   }
                   break;
                default:
-                  this.nonCriticalError(this.getText("UNKNOWN_TYPE_NODE") + " (" + _loc4_.nodeName + ")",this.TABULATION);
+                  this.nonCriticalError(this.getText("UNKNOWN_TYPE_NODE") + " (" + xConfigNode.nodeName + ")",this.TABULATION);
             }
-            _loc4_ = _loc4_.nextSibling;
+            xConfigNode = xConfigNode.nextSibling;
          }
-         if(_loc5_.length == 0)
+         if(aConfigurations.length == 0)
          {
             this.criticalError("CORRUPT_CONFIG_FILE",this.TABULATION,false);
             return undefined;
          }
          this.log(this.TABULATION + this.getText("CONFIG_FILE_LOADED"));
-         this.askForConfiguration(_loc5_);
+         this.askForConfiguration(aConfigurations);
       }
       this.criticalError("NO_CONFIG_FILE",this.TABULATION,false);
       return undefined;
@@ -983,18 +983,18 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
       {
          this.logTitle(this.getText("CHOOSE_CONFIGURATION"));
          this._lstConfiguration.dataProvider = eaConfigurations;
-         var _loc3_ = this.getOptionsSharedObject().data.loaderLastConfName;
-         if(_loc3_ != undefined)
+         var sLastConfName = this.getOptionsSharedObject().data.loaderLastConfName;
+         if(sLastConfName != undefined)
          {
-            var _loc4_ = 0;
-            while(_loc4_ < eaConfigurations.length)
+            var nIndex = 0;
+            while(nIndex < eaConfigurations.length)
             {
-               if(eaConfigurations[_loc4_].data.name == _loc3_)
+               if(eaConfigurations[nIndex].data.name == sLastConfName)
                {
-                  this._lstConfiguration.selectedIndex = _loc4_;
+                  this._lstConfiguration.selectedIndex = nIndex;
                   break;
                }
-               _loc4_ = _loc4_ + 1;
+               nIndex = nIndex + 1;
             }
          }
          else
@@ -1007,46 +1007,46 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
    }
    function selectConfiguration()
    {
-      var _loc2_ = this._lstConfiguration.selectedItem.data.connexionServers;
-      this._lstConnexionServer.dataProvider = _loc2_;
-      var _loc3_ = this.getOptionsSharedObject();
-      var _loc4_ = _loc3_.data.loaderConf[this._lstConfiguration.selectedItem.label];
-      if(_loc4_ != undefined)
+      var aConnServers = this._lstConfiguration.selectedItem.data.connexionServers;
+      this._lstConnexionServer.dataProvider = aConnServers;
+      var oOptions = this.getOptionsSharedObject();
+      var sLastServer = oOptions.data.loaderConf[this._lstConfiguration.selectedItem.label];
+      if(sLastServer != undefined)
       {
-         var _loc5_ = 0;
-         while(_loc5_ < _loc2_.length)
+         var nIndex = 0;
+         while(nIndex < aConnServers.length)
          {
-            if(_loc2_[_loc5_].data.name == _loc4_)
+            if(aConnServers[nIndex].data.name == sLastServer)
             {
-               this._lstConnexionServer.selectedIndex = _loc5_;
+               this._lstConnexionServer.selectedIndex = nIndex;
                break;
             }
-            _loc5_ = _loc5_ + 1;
+            nIndex = nIndex + 1;
          }
       }
-      else if(_loc2_.length > 0)
+      else if(aConnServers.length > 0)
       {
          this._lstConnexionServer.selectedIndex = 0;
       }
-      var _loc6_ = this._lstConfiguration.selectedItem.label;
-      var _loc7_ = _loc6_ != _loc3_.data.loaderLastConfName;
-      if(_loc7_)
+      var sConfigName = this._lstConfiguration.selectedItem.label;
+      var bConfigChanged = sConfigName != oOptions.data.loaderLastConfName;
+      if(bConfigChanged)
       {
          this.clearCache();
       }
-      _loc3_.data.loaderLastConfName = _loc6_;
-      _loc3_.flush();
+      oOptions.data.loaderLastConfName = sConfigName;
+      oOptions.flush();
       this.selectConnexionServer();
    }
    function selectConnexionServer()
    {
-      var _loc2_ = this.getOptionsSharedObject();
-      if(_loc2_.data.loaderConf == undefined)
+      var oOptions = this.getOptionsSharedObject();
+      if(oOptions.data.loaderConf == undefined)
       {
-         _loc2_.data.loaderConf = {};
+         oOptions.data.loaderConf = {};
       }
-      _loc2_.data.loaderConf[this._lstConfiguration.selectedItem.label] = this._lstConnexionServer.selectedItem.label;
-      _loc2_.flush();
+      oOptions.data.loaderConf[this._lstConfiguration.selectedItem.label] = this._lstConnexionServer.selectedItem.label;
+      oOptions.flush();
    }
    function chooseConfiguration(oConf, oServer, bLog)
    {
@@ -1109,32 +1109,32 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
       this.logTitle(this.getText("LOAD_LANG_FILE"));
       this._sStep = "LANG";
       this._nLoadedLangFiles = 0;
-      var _loc2_ = this.copyAndOrganizeDataBanks();
-      this._aCurrentDataBanks = _loc2_;
-      var _loc3_ = 0;
-      while(_loc3_ < _loc2_.length)
+      var aDataBanks = this.copyAndOrganizeDataBanks();
+      this._aCurrentDataBanks = aDataBanks;
+      var nIndex = 0;
+      while(nIndex < aDataBanks.length)
       {
-         var _loc4_ = this.getLangSharedObject(_loc3_);
-         var _loc5_ = _loc4_.data.VERSIONS.lang;
-         _global[dofus.Constants.GLOBAL_SO_LANG_NAME + "_" + _loc3_] = _loc4_;
-         var _loc6_ = this.getDataBankLogHeader(_loc3_);
-         this.log(this.TABULATION + _loc6_ + this.getText("CURRENT_LANG_FILE_VERSION",[_loc5_ != undefined ? _loc5_ : "Aucune"]));
-         this.log(this.TABULATION + _loc6_ + this.getText("CHECK_LAST_VERSION"));
-         var _loc7_ = this._aXtraCurrentVersion[_loc3_];
-         if(_loc7_ == undefined)
+         var oLangSharedObject = this.getLangSharedObject(nIndex);
+         var nLangVersion = oLangSharedObject.data.VERSIONS.lang;
+         _global[dofus.Constants.GLOBAL_SO_LANG_NAME + "_" + nIndex] = oLangSharedObject;
+         var sDataBankHeader = this.getDataBankLogHeader(nIndex);
+         this.log(this.TABULATION + sDataBankHeader + this.getText("CURRENT_LANG_FILE_VERSION",[nLangVersion != undefined ? nLangVersion : "Aucune"]));
+         this.log(this.TABULATION + sDataBankHeader + this.getText("CHECK_LAST_VERSION"));
+         var aXtraVersion = this._aXtraCurrentVersion[nIndex];
+         if(aXtraVersion == undefined)
          {
-            _loc7_ = [];
-            this._aXtraCurrentVersion[_loc3_] = _loc7_;
+            aXtraVersion = [];
+            this._aXtraCurrentVersion[nIndex] = aXtraVersion;
          }
-         _loc7_.lang = !_global.isNaN(_loc5_) ? Number(_loc5_) : 0;
-         this.checkLanguageWithNextHost("lang," + _loc5_,_loc3_);
-         _loc3_ = _loc3_ + 1;
+         aXtraVersion.lang = !_global.isNaN(nLangVersion) ? Number(nLangVersion) : 0;
+         this.checkLanguageWithNextHost("lang," + nLangVersion,nIndex);
+         nIndex = nIndex + 1;
       }
    }
    function checkLanguageWithNextHost(sFiles, nDataBank)
    {
-      var _loc2_ = this._aCurrentDataBanks[nDataBank];
-      if(_loc2_.length < 1)
+      var aServers = this._aCurrentDataBanks[nDataBank];
+      if(aServers.length < 1)
       {
          if(!this._bLocalFileListLoaded)
          {
@@ -1143,28 +1143,28 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
          else
          {
             this.nonCriticalError("CHECK_LAST_VERSION_FAILED",this.TABULATION,true);
-            var _loc3_ = new LoadVars();
-            var _loc4_ = [];
-            var _loc5_ = this._mcLocalFileList.VERSIONS[_global.CONFIG.language];
-            for(var i in _loc5_)
+            var oLoadVars = new LoadVars();
+            var aFileList = [];
+            var oLocalVersions = this._mcLocalFileList.VERSIONS[_global.CONFIG.language];
+            for(var i in oLocalVersions)
             {
-               _loc4_.push(i + "," + _global.CONFIG.language + "," + _loc5_[i]);
+               aFileList.push(i + "," + _global.CONFIG.language + "," + oLocalVersions[i]);
             }
-            _loc3_.f = _loc4_.join("|");
-            this.onCheckLanguage(true,_loc3_,undefined,undefined,nDataBank);
+            oLoadVars.f = aFileList.join("|");
+            this.onCheckLanguage(true,oLoadVars,undefined,undefined,nDataBank);
          }
          return undefined;
       }
-      var oServer = _loc2_.shift();
+      var oServer = aServers.shift();
       if(oServer.type == "local")
       {
          this.checkLanguageWithNextHost(sFiles,nDataBank);
          return undefined;
       }
       var sURL = oServer.url + "lang/versions_" + _global.CONFIG.language + ".txt" + "?wtf=" + Math.random();
-      var _loc6_ = new LoadVars();
+      var oVersionVars = new LoadVars();
       var loader = this;
-      _loc6_.onLoad = function(bSuccess)
+      oVersionVars.onLoad = function(bSuccess)
       {
          if(!bSuccess)
          {
@@ -1173,7 +1173,7 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
          loader.onCheckLanguage(bSuccess,this,oServer.url,sFiles,nDataBank);
       };
       this.showWaitBar(true);
-      _loc6_.load(sURL,this,"GET");
+      oVersionVars.load(sURL,this,"GET");
    }
    function onCheckLanguage(bSuccess, lv, sServer, sFiles, nDataBank)
    {
@@ -1182,33 +1182,33 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
       {
          this.setTotalBarValue(100,100);
          this._aDistantFilesList[nDataBank] = lv.f;
-         var _loc7_ = lv.f.substr(lv.f.indexOf("lang,")).split("|")[0].split(",");
-         var _loc8_ = false;
+         var aLanguageVersionParts = lv.f.substr(lv.f.indexOf("lang,")).split("|")[0].split(",");
+         var bLanguageUpToDate = false;
          if(lv.f != "")
          {
-            var _loc9_ = _loc7_[2];
-            if(_global.CONFIG.language == this.getLangSharedObject(nDataBank).data.LANGUAGE && (this._aXtraCurrentVersion[nDataBank].lang != undefined && _loc9_ == this._aXtraCurrentVersion[nDataBank].lang))
+            var nRemoteLanguageVersion = aLanguageVersionParts[2];
+            if(_global.CONFIG.language == this.getLangSharedObject(nDataBank).data.LANGUAGE && (this._aXtraCurrentVersion[nDataBank].lang != undefined && nRemoteLanguageVersion == this._aXtraCurrentVersion[nDataBank].lang))
             {
-               _loc8_ = true;
+               bLanguageUpToDate = true;
             }
             else
             {
-               this.log(this.TABULATION + this.getDataBankLogHeader(nDataBank) + this.getText("NEW_LANG_FILE_AVAILABLE",[_loc7_[2]]));
+               this.log(this.TABULATION + this.getDataBankLogHeader(nDataBank) + this.getText("NEW_LANG_FILE_AVAILABLE",[aLanguageVersionParts[2]]));
                if(this._bSkipDistantLoad)
                {
                   if(this._aXtraCurrentVersion[nDataBank].lang == 0)
                   {
-                     _loc9_ = this._mcLocalFileList.VERSIONS[_global.CONFIG.language].lang;
+                     nRemoteLanguageVersion = this._mcLocalFileList.VERSIONS[_global.CONFIG.language].lang;
                   }
                }
-               this.updateLanguage(_loc7_[2],nDataBank);
+               this.updateLanguage(aLanguageVersionParts[2],nDataBank);
             }
          }
          else
          {
-            _loc8_ = true;
+            bLanguageUpToDate = true;
          }
-         if(_loc8_)
+         if(bLanguageUpToDate)
          {
             this._nLoadedLangFiles = this._nLoadedLangFiles + 1;
             this.log(this.TABULATION + this.getText("NO_NEW_VERSION_AVAILABLE"));
@@ -1228,22 +1228,22 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
    {
       this._bUpdate = true;
       this.showWaitBar(true);
-      var _loc4_ = new dofus.utils.LangFileLoader();
-      _loc4_.addListener(this);
-      var _loc5_ = dofus.Constants.LANG_SHAREDOBJECT_NAME + "_" + nDataBank;
-      var _loc6_ = this.copyAndOrganizeDataServersForDataBank(nDataBank);
-      var _loc7_ = this.getDataBankMcContainer(nDataBank);
-      _loc4_.loadLangFile(_loc6_,"lang/swf/lang_" + _global.CONFIG.language + "_" + nFileNumber + ".swf",_loc7_,_loc5_,"lang",_global.CONFIG.language,false);
+      var oLangFileLoader = new dofus.utils.LangFileLoader();
+      oLangFileLoader.addListener(this);
+      var sLangSOName = dofus.Constants.LANG_SHAREDOBJECT_NAME + "_" + nDataBank;
+      var aServers = this.copyAndOrganizeDataServersForDataBank(nDataBank);
+      var mcContainer = this.getDataBankMcContainer(nDataBank);
+      oLangFileLoader.loadLangFile(aServers,"lang/swf/lang_" + _global.CONFIG.language + "_" + nFileNumber + ".swf",mcContainer,sLangSOName,"lang",_global.CONFIG.language,false);
    }
    function getDataBankMcContainer(nDataBank)
    {
-      var _loc3_ = "db" + nDataBank;
-      var _loc4_ = this._mcContainer[_loc3_];
-      if(_loc4_ == undefined)
+      var sContainerName = "db" + nDataBank;
+      var mcDataBankContainer = this._mcContainer[sContainerName];
+      if(mcDataBankContainer == undefined)
       {
-         _loc4_ = this._mcContainer.createEmptyMovieClip(_loc3_,this._mcContainer.getNextHighestDepth());
+         mcDataBankContainer = this._mcContainer.createEmptyMovieClip(sContainerName,this._mcContainer.getNextHighestDepth());
       }
-      return _loc4_;
+      return mcDataBankContainer;
    }
    function loadModules()
    {
@@ -1261,13 +1261,13 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
          return undefined;
       }
       this._aCurrentModule = this._aCurrentModules.shift();
-      var _loc2_ = this._aCurrentModule[0];
-      var _loc3_ = this._aCurrentModule[1];
-      var _loc4_ = this._aCurrentModule[2];
-      var _loc5_ = this._aCurrentModule[4];
-      this._mcCurrentModule = this._mcModules.createEmptyMovieClip("mc" + _loc5_,this._mcModules.getNextHighestDepth());
+      var sModuleGroup = this._aCurrentModule[0];
+      var sModulePath = this._aCurrentModule[1];
+      var sModuleId = this._aCurrentModule[2];
+      var sModuleName = this._aCurrentModule[4];
+      this._mcCurrentModule = this._mcModules.createEmptyMovieClip("mc" + sModuleName,this._mcModules.getNextHighestDepth());
       this._timedProgress = _global.setInterval(this.onTimedProgress,1000,this,this._mclLoader,this._mcCurrentModule);
-      this._mclLoader.loadClip(_loc3_,this._mcCurrentModule);
+      this._mclLoader.loadClip(sModulePath,this._mcCurrentModule);
    }
    function onCoreLoaded(mcCore)
    {
@@ -1290,16 +1290,16 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
    function initCore(mcCore)
    {
       Key.removeListener(this);
-      var _loc3_ = null;
-      if((_loc3_ = dofus.DofusCore.getInstance()) == undefined)
+      var oDofusCore = null;
+      if((oDofusCore = dofus.DofusCore.getInstance()) == undefined)
       {
-         _loc3_ = new dofus.DofusCore(mcCore);
+         oDofusCore = new dofus.DofusCore(mcCore);
          if(Key.isDown(Key.SHIFT))
          {
             Stage.scaleMode = "exactFit";
          }
       }
-      _loc3_.initStart();
+      oDofusCore.initStart();
       this._bNonCriticalError = false;
       this._bUpdate = false;
    }
@@ -1312,31 +1312,31 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
    }
    function checkLocalFileListWithNextHost(sFiles)
    {
-      var _loc2_ = this._aCurrentDataBanks[dofus.utils.DofusTranslator.STANDARD_DATA_BANK];
-      if(_loc2_.length < 1)
+      var aServers = this._aCurrentDataBanks[dofus.utils.DofusTranslator.STANDARD_DATA_BANK];
+      if(aServers.length < 1)
       {
          this.nonCriticalError("CHECK_LAST_VERSION_FAILED",this.TABULATION + this.TABULATION,true);
          this.loadLanguage();
          return undefined;
       }
-      var _loc3_ = _loc2_.shift();
-      var sURL = _loc3_.url + sFiles;
+      var oServer = aServers.shift();
+      var sURL = oServer.url + sFiles;
       var loader = this;
-      var _loc4_ = new MovieClipLoader();
-      var _loc5_ = {};
-      _loc5_.onLoadInit = function(mc)
+      var oMCLoader = new MovieClipLoader();
+      var oEventHandler = {};
+      oEventHandler.onLoadInit = function(mc)
       {
          loader.loadLanguage();
          loader._bLocalFileListLoaded = true;
       };
-      _loc5_.onLoadError = function(mc)
+      oEventHandler.onLoadError = function(mc)
       {
          loader.nonCriticalError(loader.getText("IMPOSSIBLE_TO_GET_FILE",[sURL]),loader.TABULATION + loader.TABULATION);
          loader.checkLocalFileListWithNextHost(sFiles);
       };
-      _loc4_.addListener(_loc5_);
-      this.log(this.TABULATION + this.getDataBankLogHeader(_loc3_.dataBankId) + this.getText("CHECKING_VERSIONS"));
-      _loc4_.loadClip(sURL,this._mcLocalFileList);
+      oMCLoader.addListener(oEventHandler);
+      this.log(this.TABULATION + this.getDataBankLogHeader(oServer.dataBankId) + this.getText("CHECKING_VERSIONS"));
+      oMCLoader.loadClip(sURL,this._mcLocalFileList);
    }
    function loadXtra()
    {
@@ -1364,91 +1364,91 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
       this.log(this.TABULATION + this.getText("CHECK_LAST_VERSION"));
       this._sStep = "XTRA";
       this.moveProgressBar(-60);
-      var _loc2_ = dofus.utils.Api.getInstance();
-      if(_loc2_ != undefined)
+      var oApi = dofus.utils.Api.getInstance();
+      if(oApi != undefined)
       {
-         _loc2_.lang.clearSOXtraCache();
+         oApi.lang.clearSOXtraCache();
       }
-      var _loc3_ = this.copyAndOrganizeDataBanks();
-      this._aCurrentDataBanks = _loc3_;
+      var aDataBanks = this.copyAndOrganizeDataBanks();
+      this._aCurrentDataBanks = aDataBanks;
       this.showWaitBar(false);
       this._nTotalXtraFilesToLoad = 0;
-      var _loc4_ = _global.API.lang.getConfigText("XTRA_FILE");
-      var _loc5_ = 0;
-      while(_loc5_ < _loc3_.length)
+      var aXtraFiles = _global.API.lang.getConfigText("XTRA_FILE");
+      var nDatabankIndex = 0;
+      while(nDatabankIndex < aDataBanks.length)
       {
-         var _loc6_ = this.getXtraSharedObject(_loc5_);
-         _global[dofus.Constants.GLOBAL_SO_XTRA_NAME + "_" + _loc5_] = _loc6_;
-         var _loc7_ = _loc6_.data.VERSIONS;
-         var _loc8_ = 0;
-         while(_loc8_ < _loc4_.length)
+         var oXtraSharedObject = this.getXtraSharedObject(nDatabankIndex);
+         _global[dofus.Constants.GLOBAL_SO_XTRA_NAME + "_" + nDatabankIndex] = oXtraSharedObject;
+         var oVersionData = oXtraSharedObject.data.VERSIONS;
+         var nXtraIndex = 0;
+         while(nXtraIndex < aXtraFiles.length)
          {
-            var _loc9_ = _loc4_[_loc8_];
-            var _loc10_ = _loc7_[_loc9_] != undefined ? _loc7_[_loc9_] : 0;
-            var _loc11_ = this._aXtraCurrentVersion[_loc5_];
-            if(_loc11_ == undefined)
+            var sXtraFile = aXtraFiles[nXtraIndex];
+            var nXtraVersion = oVersionData[sXtraFile] != undefined ? oVersionData[sXtraFile] : 0;
+            var aXtraVersionArray = this._aXtraCurrentVersion[nDatabankIndex];
+            if(aXtraVersionArray == undefined)
             {
-               _loc11_ = [];
-               this._aXtraCurrentVersion[_loc5_] = _loc11_;
+               aXtraVersionArray = [];
+               this._aXtraCurrentVersion[nDatabankIndex] = aXtraVersionArray;
             }
-            _loc11_[_loc9_] = _loc10_;
-            _loc8_ = _loc8_ + 1;
+            aXtraVersionArray[sXtraFile] = nXtraVersion;
+            nXtraIndex = nXtraIndex + 1;
          }
-         var _loc12_ = this._aDistantFilesList[_loc5_].split("|");
-         this._aXtraList[_loc5_] = _loc12_;
-         this._nTotalXtraFilesToLoad += _loc12_.length;
-         _loc5_ = _loc5_ + 1;
+         var aDistantFiles = this._aDistantFilesList[nDatabankIndex].split("|");
+         this._aXtraList[nDatabankIndex] = aDistantFiles;
+         this._nTotalXtraFilesToLoad += aDistantFiles.length;
+         nDatabankIndex = nDatabankIndex + 1;
       }
       this._nRemainingXtraFilesToLoad = this._nTotalXtraFilesToLoad;
-      var _loc13_ = 0;
-      while(_loc13_ < _loc3_.length)
+      var nLoaderIndex = 0;
+      while(nLoaderIndex < aDataBanks.length)
       {
-         this.updateNextXtra(_loc13_);
-         _loc13_ = _loc13_ + 1;
+         this.updateNextXtra(nLoaderIndex);
+         nLoaderIndex = nLoaderIndex + 1;
       }
    }
    function updateNextXtra(nDataBank)
    {
-      var _loc3_ = this._aXtraList[nDataBank];
-      var _loc4_ = this._aCurrentXtraLoadFile[nDataBank];
-      if(this._bSkipDistantLoad && _loc4_ != undefined)
+      var aXtraFiles = this._aXtraList[nDataBank];
+      var aCurrentXtraFile = this._aCurrentXtraLoadFile[nDataBank];
+      if(this._bSkipDistantLoad && aCurrentXtraFile != undefined)
       {
-         _loc3_.push(_loc4_);
+         aXtraFiles.push(aCurrentXtraFile);
       }
-      if(_loc3_.length >= 1)
+      if(aXtraFiles.length >= 1)
       {
          while(true)
          {
-            if(_loc3_.length > 0)
+            if(aXtraFiles.length > 0)
             {
                this.setTotalBarValue(10 + (90 - 90 / this._nTotalXtraFilesToLoad * this._nRemainingXtraFilesToLoad),100);
                this._nRemainingXtraFilesToLoad = this._nRemainingXtraFilesToLoad - 1;
-               var _loc5_ = _loc3_.shift().split(",");
-               this._aCurrentXtra[nDataBank] = _loc5_;
-               if(_loc3_.length > 0 && _loc5_[2])
+               var aXtraData = aXtraFiles.shift().split(",");
+               this._aCurrentXtra[nDataBank] = aXtraData;
+               if(aXtraFiles.length > 0 && aXtraData[2])
                {
                   if(!this._bSkipDistantLoad)
                   {
-                     this._aCurrentXtraLoadFile[nDataBank] = _loc5_;
+                     this._aCurrentXtraLoadFile[nDataBank] = aXtraData;
                   }
-                  var _loc6_ = _loc5_[0];
-                  var _loc7_ = _loc5_[1];
-                  var _loc8_ = _loc5_[2];
-                  if(_loc6_ != "lang")
+                  var sXtraName = aXtraData[0];
+                  var sLanguage = aXtraData[1];
+                  var sVersion = aXtraData[2];
+                  if(sXtraName != "lang")
                   {
-                     this._mcProgressBarGroup.txtInfo.text = _loc6_;
-                     var _loc9_ = this._aXtraCurrentVersion[nDataBank][_loc6_];
-                     if(!(_global.CONFIG.language == this.getLangSharedObject(nDataBank).data.LANGUAGE && Number(_loc8_) == _loc9_))
+                     this._mcProgressBarGroup.txtInfo.text = sXtraName;
+                     var nCurrentVersion = this._aXtraCurrentVersion[nDataBank][sXtraName];
+                     if(!(! (_global.CONFIG.language == this.getLangSharedObject(nDataBank).data.LANGUAGE && Number(sVersion) == nCurrentVersion))
                      {
                         if(this._bLocalFileListLoaded)
                         {
                            if(this._bSkipDistantLoad)
                            {
-                              if(this._aXtraCurrentVersion[nDataBank][_loc6_] != 0)
+                              if(this._aXtraCurrentVersion[nDataBank][sXtraName] != 0)
                               {
                                  continue;
                               }
-                              _loc8_ = this._mcLocalFileList.VERSIONS[_global.CONFIG.language][_loc6_];
+                              sVersion = this._mcLocalFileList.VERSIONS[_global.CONFIG.language][sXtraName];
                            }
                            break;
                         }
@@ -1465,38 +1465,38 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
             this.noMoreXtra();
          }
          this._bUpdate = true;
-         _loc5_[3] = _loc5_[0] + "_" + _loc5_[1] + "_" + _loc5_[2];
-         this.log(this.TABULATION + this.getDataBankLogHeader(nDataBank) + this.getText("UPDATE_FILE",[_loc6_]));
+         aXtraData[3] = aXtraData[0] + "_" + aXtraData[1] + "_" + aXtraData[2];
+         this.log(this.TABULATION + this.getDataBankLogHeader(nDataBank) + this.getText("UPDATE_FILE",[sXtraName]));
          this.showWaitBar(true);
-         var _loc10_ = new dofus.utils.LangFileLoader();
-         _loc10_.addListener(this);
+         var oXtraLoader = new dofus.utils.LangFileLoader();
+         oXtraLoader.addListener(this);
          if(dofus.Constants.USE_JS_LOG && _global.CONFIG.isNewAccount)
          {
-            this.getURL("JavaScript:WriteLog(\'updateNextXtra;" + _loc6_ + "_" + _global.CONFIG.language + "_" + _loc8_ + "\')");
+            this.getURL("JavaScript:WriteLog(\'updateNextXtra;" + sXtraName + "_" + _global.CONFIG.language + "_" + sVersion + "\')");
          }
-         var _loc11_ = dofus.Constants.XTRA_SHAREDOBJECT_NAME + "_" + nDataBank;
-         var _loc12_ = this.copyAndOrganizeDataServersForDataBank(nDataBank);
-         var _loc13_ = this.getDataBankMcContainer(nDataBank);
-         _loc10_.loadLangFile(_loc12_,"lang/swf/" + _loc6_ + "_" + _global.CONFIG.language + "_" + _loc8_ + ".swf",_loc13_,_loc11_,_loc6_,_global.CONFIG.language,true);
+         var sXtraSOName = dofus.Constants.XTRA_SHAREDOBJECT_NAME + "_" + nDataBank;
+         var aServers = this.copyAndOrganizeDataServersForDataBank(nDataBank);
+         var mcContainer = this.getDataBankMcContainer(nDataBank);
+         oXtraLoader.loadLangFile(aServers,"lang/swf/" + sXtraName + "_" + _global.CONFIG.language + "_" + sVersion + ".swf",mcContainer,sXtraSOName,sXtraName,_global.CONFIG.language,true);
          return undefined;
       }
       this.noMoreXtra();
    }
    function noMoreXtra()
    {
-      var _loc2_ = true;
-      var _loc3_ = 0;
-      while(_loc3_ < this._aXtraList.length)
+      var bHasMoreFiles = true;
+      var nIndex = 0;
+      while(nIndex < this._aXtraList.length)
       {
-         var _loc4_ = this._aXtraList[_loc3_];
-         if(_loc4_ != undefined && _loc4_.length > 0)
+         var aFiles = this._aXtraList[nIndex];
+         if(aFiles != undefined && aFiles.length > 0)
          {
-            _loc2_ = false;
+            bHasMoreFiles = false;
             break;
          }
-         _loc3_ = _loc3_ + 1;
+         nIndex = nIndex + 1;
       }
-      if(!_loc2_)
+      if(!bHasMoreFiles)
       {
          return undefined;
       }
@@ -1529,22 +1529,22 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
    }
    function checkCacheVersion()
    {
-      var _loc2_ = new Date();
-      var _loc3_ = _loc2_.getFullYear() + "-" + (_loc2_.getMonth() + 1) + "-" + _loc2_.getDate();
+      var dCurrentDate = new Date();
+      var sDateString = dCurrentDate.getFullYear() + "-" + (dCurrentDate.getMonth() + 1) + "-" + dCurrentDate.getDate();
       if(!this.getCacheDateSharedObject().data.clearDate)
       {
          this.clearCache();
-         this.getCacheDateSharedObject().data.clearDate = _loc3_;
+         this.getCacheDateSharedObject().data.clearDate = sDateString;
          this.getCacheDateSharedObject().flush(100);
          return false;
       }
-      var _loc4_ = _global[dofus.Constants.GLOBAL_SO_LANG_NAME + "_" + dofus.utils.DofusTranslator.STANDARD_DATA_BANK];
-      if(_loc4_ && (_loc4_.data.C.CLEAR_DATE && _loc4_.data.C.ENABLED_AUTO_CLEARCACHE))
+      var oLangData = _global[dofus.Constants.GLOBAL_SO_LANG_NAME + "_" + dofus.utils.DofusTranslator.STANDARD_DATA_BANK];
+      if(oLangData && (oLangData.data.C.CLEAR_DATE && oLangData.data.C.ENABLED_AUTO_CLEARCACHE))
       {
-         if(this.getCacheDateSharedObject().data.clearDate < _loc4_.data.C.CLEAR_DATE)
+         if(this.getCacheDateSharedObject().data.clearDate < oLangData.data.C.CLEAR_DATE)
          {
             this.clearCache();
-            this.getCacheDateSharedObject().data.clearDate = _loc4_.data.C.CLEAR_DATE;
+            this.getCacheDateSharedObject().data.clearDate = oLangData.data.C.CLEAR_DATE;
             this.getCacheDateSharedObject().flush();
             this.reboot();
             return false;
@@ -1559,21 +1559,21 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
    }
    function onTimedProgress(shit, ldr, target)
    {
-      var _loc5_ = ldr.getProgress(target);
-      shit.setProgressBarValue(Number(_loc5_.bytesLoaded),Number(_loc5_.bytesTotal));
+      var oProgressData = ldr.getProgress(target);
+      shit.setProgressBarValue(Number(oProgressData.bytesLoaded),Number(oProgressData.bytesTotal));
    }
    function onLoadError(mc, errorCode, httpStatus, oServer)
    {
       _global.clearInterval(this._timedProgress);
       this.showProgressBar(false);
       this.showWaitBar(false);
-      var _loc6_ = oServer.dataBankId;
+      var nDatabankId = oServer.dataBankId;
       switch(this._sStep)
       {
          case "LANG":
             if(oServer.type == "local")
             {
-               this.log(this.TABULATION + this.TABULATION + this.getDataBankLogHeader(_loc6_) + this.getText("NO_FILE_IN_LOCAL",["lang",oServer.url]));
+               this.log(this.TABULATION + this.TABULATION + this.getDataBankLogHeader(nDatabankId) + this.getText("NO_FILE_IN_LOCAL",["lang",oServer.url]));
             }
             else
             {
@@ -1581,7 +1581,7 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
                {
                   this.getURL("JavaScript:WriteLog(\'onLoadError LANG-" + oServer.url + "lang" + "\')");
                }
-               this.nonCriticalError(this.getText("IMPOSSIBLE_TO_DOWNLOAD_FILE",["lang",oServer.url]),this.TABULATION + this.TABULATION + this.getDataBankLogHeader(_loc6_));
+               this.nonCriticalError(this.getText("IMPOSSIBLE_TO_DOWNLOAD_FILE",["lang",oServer.url]),this.TABULATION + this.TABULATION + this.getDataBankLogHeader(nDatabankId));
             }
             break;
          case "MODULE":
@@ -1592,18 +1592,18 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
             this.criticalError("IMPOSSIBLE_TO_LOAD_MODULE",this.TABULATION,true,[this._aCurrentModule[4]]);
             break;
          case "XTRA":
-            var _loc7_ = this._aCurrentXtra[_loc6_];
+            var aCurrentExtraFile = this._aCurrentXtra[nDatabankId];
             if(oServer.type == "local")
             {
-               this.log(this.TABULATION + this.TABULATION + this.getDataBankLogHeader(_loc6_) + this.getText("NO_FILE_IN_LOCAL",[_loc7_[3],oServer.url]));
+               this.log(this.TABULATION + this.TABULATION + this.getDataBankLogHeader(nDatabankId) + this.getText("NO_FILE_IN_LOCAL",[aCurrentExtraFile[3],oServer.url]));
             }
             else
             {
                if(dofus.Constants.USE_JS_LOG && _global.CONFIG.isNewAccount)
                {
-                  this.getURL("JavaScript:WriteLog(\'onLoadError XTRA-" + oServer.url + _loc7_[3] + "\')");
+                  this.getURL("JavaScript:WriteLog(\'onLoadError XTRA-" + oServer.url + aCurrentExtraFile[3] + "\')");
                }
-               this.nonCriticalError(this.getText("IMPOSSIBLE_TO_DOWNLOAD_FILE",[_loc7_[3],oServer.url]),this.TABULATION + this.TABULATION + this.getDataBankLogHeader(_loc6_));
+               this.nonCriticalError(this.getText("IMPOSSIBLE_TO_DOWNLOAD_FILE",[aCurrentExtraFile[3],oServer.url]),this.TABULATION + this.TABULATION + this.getDataBankLogHeader(nDatabankId));
             }
       }
    }
@@ -1618,12 +1618,12 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
    function onLoadInit(mc, oServer)
    {
       this.showProgressBar(false);
-      var _loc4_ = oServer.dataBankId;
+      var nDatabankId = oServer.dataBankId;
       switch(this._sStep)
       {
          case "LANG":
             this._nLoadedLangFiles = this._nLoadedLangFiles + 1;
-            this.logGreen(this.TABULATION + this.getDataBankLogHeader(_loc4_) + this.getText("UPDATE_FINISH",["lang",oServer.url]));
+            this.logGreen(this.TABULATION + this.getDataBankLogHeader(nDatabankId) + this.getText("UPDATE_FINISH",["lang",oServer.url]));
             if(this._aCurrentDataBanks.length == this._nLoadedLangFiles)
             {
                if(!this.checkCacheVersion())
@@ -1642,17 +1642,17 @@ class dofus.DofusLoader extends ank.utils.QueueEmbedMovieClip
             this.loadNextModule();
             break;
          case "XTRA":
-            var _loc5_ = this._aCurrentXtra[_loc4_];
+            var aCurrentExtraFile = this._aCurrentXtra[nDatabankId];
             if(oServer.type == "local")
             {
-               this.logGreen(this.TABULATION + this.TABULATION + this.getDataBankLogHeader(_loc4_) + this.getText("FILE_LOADED",[_loc5_[3],oServer.url]));
+               this.logGreen(this.TABULATION + this.TABULATION + this.getDataBankLogHeader(nDatabankId) + this.getText("FILE_LOADED",[aCurrentExtraFile[3],oServer.url]));
             }
             else
             {
-               this.logGreen(this.TABULATION + this.TABULATION + this.getDataBankLogHeader(_loc4_) + this.getText("UPDATE_FINISH",[_loc5_[3],oServer.url]));
+               this.logGreen(this.TABULATION + this.TABULATION + this.getDataBankLogHeader(nDatabankId) + this.getText("UPDATE_FINISH",[aCurrentExtraFile[3],oServer.url]));
             }
-            this._aCurrentXtraLoadFile[_loc4_] = undefined;
-            this.updateNextXtra(_loc4_);
+            this._aCurrentXtraLoadFile[nDatabankId] = undefined;
+            this.updateNextXtra(nDatabankId);
       }
    }
    function onCorruptFile(mc, totalBytes, oServer)

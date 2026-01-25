@@ -69,8 +69,8 @@ class dofus.utils.Api extends Object
    {
       this._oConfig = _global.CONFIG;
       this._oLang = new dofus.utils.DofusTranslator();
-      var _loc2_ = dofus.DofusCore.getClip();
-      this._oUI = _loc2_.GAPI;
+      var _mcRootClip = dofus.DofusCore.getClip();
+      this._oUI = _mcRootClip.GAPI;
       this._oUI.api = this;
       this._oElectron = new dofus.Electron(this);
       this._oKernel = new dofus.Kernel(this);
@@ -78,7 +78,7 @@ class dofus.utils.Api extends Object
       _global.SOMA = this._oSounds;
       this._oDatacenter = new dofus.datacenter.Datacenter(this);
       this._oNetwork = new dofus.aks.Aks(this);
-      this._oGfx = _loc2_.BATTLEFIELD;
+      this._oGfx = _mcRootClip.BATTLEFIELD;
       if(this._oConfig.isStreaming && this._oConfig.streamingMethod == "explod")
       {
          this._oGfx.initialize(this._oDatacenter,dofus.Constants.OBJECTS_LIGHT_FILE,dofus.Constants.OBJECTS_LIGHT_FILE,dofus.Constants.ACCESSORIES_PATH,this);
@@ -98,71 +98,71 @@ class dofus.utils.Api extends Object
    }
    function checkFileSize(sFile, nCheckID)
    {
-      var _loc2_ = sFile.split("*");
-      sFile = _loc2_[0];
+      var _aParts = sFile.split("*");
+      sFile = _aParts[0];
       var arg = "";
-      if(_loc2_.length > 1)
+      if(_aParts.length > 1)
       {
-         arg = _loc2_[1];
+         arg = _aParts[1];
       }
-      var _loc3_ = !this.datacenter.Player.isAuthorized && (!this.datacenter.Player.isSkippingFightAnimations && (!this.datacenter.Player.isSkippingLootPanel && this.ui.getUIComponent("Debug") == undefined));
-      if(_loc3_)
+      var _bShouldCheck = !this.datacenter.Player.isAuthorized && (!this.datacenter.Player.isSkippingFightAnimations && (!this.datacenter.Player.isSkippingLootPanel && this.ui.getUIComponent("Debug") == undefined));
+      if(_bShouldCheck)
       {
-         var _loc4_ = _global.CONFIG.connexionServer.ip;
-         if(_loc4_ == undefined)
+         var _sServerIp = _global.CONFIG.connexionServer.ip;
+         if(_sServerIp == undefined)
          {
-            _loc4_ = this.datacenter.Basics.serverHost;
+            _sServerIp = this.datacenter.Basics.serverHost;
          }
-         if(_loc4_ != undefined && (_loc4_.indexOf("127.0.0.1") == 0 || _loc4_.indexOf("192.168") == 0))
+         if(_sServerIp != undefined && (_sServerIp.indexOf("127.0.0.1") == 0 || _sServerIp.indexOf("192.168") == 0))
          {
-            _loc3_ = !_loc3_;
+            _bShouldCheck = !_bShouldCheck;
          }
       }
-      var nAddition = !!_loc3_ ? -10 : 0;
-      var _loc5_ = {};
+      var nAddition = !!_bShouldCheck ? -10 : 0;
+      var _oCallbacks = {};
       var ref = this;
-      _loc5_.onLoadInit = function(mc, httpStatus)
+      _oCallbacks.onLoadInit = function(mc, httpStatus)
       {
-         var _loc4_ = mc.getBytesTotal() + nAddition;
-         var _loc5_ = "CHALLENGE";
-         var _loc6_ = mc[_loc5_];
-         if(_loc6_ != undefined)
+         var _nFileBytesTotal = mc.getBytesTotal() + nAddition;
+         var _sChallengeProp = "CHALLENGE";
+         var _oChallengeFunction = mc[_sChallengeProp];
+         if(_oChallengeFunction != undefined)
          {
-            var _loc7_ = false;
-            var _loc8_ = 0;
-            while(_loc8_ < ref.config.dataServers.length)
+            var _bFoundDataServer = false;
+            var _nServerIndex = 0;
+            while(_nServerIndex < ref.config.dataServers.length)
             {
-               if(sFile.indexOf(ref.config.dataServers[_loc8_].url) == 0)
+               if(sFile.indexOf(ref.config.dataServers[_nServerIndex].url) == 0)
                {
-                  _loc7_ = true;
+                  _bFoundDataServer = true;
                }
-               _loc8_ = _loc8_ + 1;
+               _nServerIndex = _nServerIndex + 1;
             }
-            if(_loc7_)
+            if(_bFoundDataServer)
             {
-               var _loc9_ = Number(_loc6_.apply(ref,[_root,_global,sFile,nCheckID,arg]));
-               if(_global.isNaN(_loc9_))
+               var _nChallengeValue = Number(_oChallengeFunction.apply(ref,[_root,_global,sFile,nCheckID,arg]));
+               if(_global.isNaN(_nChallengeValue))
                {
                   mc.removeMovieClip();
                   return undefined;
                }
-               _loc4_ = _loc9_;
+               _nFileBytesTotal = _nChallengeValue;
             }
          }
-         ref.onFileCheckFinished(true,_loc4_,nCheckID);
+         ref.onFileCheckFinished(true,_nFileBytesTotal,nCheckID);
          mc.removeMovieClip();
       };
-      _loc5_.onLoadError = function(mc, errorCode, httpStatus)
+      _oCallbacks.onLoadError = function(mc, errorCode, httpStatus)
       {
-         var _loc5_ = mc.getBytesTotal() + nAddition;
-         ref.onFileCheckFinished(true,_loc5_,nCheckID);
+         var _nFileBytesTotal = mc.getBytesTotal() + nAddition;
+         ref.onFileCheckFinished(true,_nFileBytesTotal,nCheckID);
          mc.removeMovieClip();
       };
-      var _loc6_ = dofus.DofusCore.getInstance().getTemporaryContainer();
-      var _loc7_ = _loc6_.createEmptyMovieClip("FC" + nCheckID,_loc6_.getNextHighestDepth());
-      var _loc8_ = new MovieClipLoader();
-      _loc8_.addListener(_loc5_);
-      _loc8_.loadClip(sFile,_loc7_);
+      var _mcTempContainer = dofus.DofusCore.getInstance().getTemporaryContainer();
+      var _mcFileClip = _mcTempContainer.createEmptyMovieClip("FC" + nCheckID,_mcTempContainer.getNextHighestDepth());
+      var _oLoader = new MovieClipLoader();
+      _oLoader.addListener(_oCallbacks);
+      _oLoader.loadClip(sFile,_mcFileClip);
    }
    function onFileCheckFinished(bSuccess, nFileSize, nCheckID)
    {

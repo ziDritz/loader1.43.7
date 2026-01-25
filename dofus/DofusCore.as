@@ -28,12 +28,12 @@ class dofus.DofusCore extends ank.utils.QueueEmbedMovieClip
    }
    function addNodes()
    {
-      var _loc2_ = dofus.DofusCore.getClip();
-      this._mcTMCC = _loc2_.createEmptyMovieClip("TemporaryMovieClipContainer",_loc2_.getNextHighestDepth());
+      var mcRoot = dofus.DofusCore.getClip();
+      this._mcTMCC = mcRoot.createEmptyMovieClip("TemporaryMovieClipContainer",mcRoot.getNextHighestDepth());
       this._mcTMCC._visible = false;
-      _loc2_.attachMovie("BATTLEFIELD","BATTLEFIELD",_loc2_.getNextHighestDepth());
-      _loc2_.attachMovie("GAPIMain","GAPI",_loc2_.getNextHighestDepth());
-      _loc2_.attachMovie("mask","MASK",_loc2_.getNextHighestDepth());
+      mcRoot.attachMovie("BATTLEFIELD","BATTLEFIELD",mcRoot.getNextHighestDepth());
+      mcRoot.attachMovie("GAPIMain","GAPI",mcRoot.getNextHighestDepth());
+      mcRoot.attachMovie("mask","MASK",mcRoot.getNextHighestDepth());
       this.addToQueue({object:this,method:this.initApi});
    }
    function initApi()
@@ -75,8 +75,8 @@ class dofus.DofusCore extends ank.utils.QueueEmbedMovieClip
    }
    function forceMouseOver()
    {
-      var _loc2_ = dofus.DofusCore.getClip();
-      _loc2_.attachMovie("clipForceOver","_mcForceOver",1000,{_x:_loc2_._xmouse,_y:_loc2_._ymouse});
+      var mcRoot = dofus.DofusCore.getClip();
+      mcRoot.attachMovie("clipForceOver","_mcForceOver",1000,{_x:mcRoot._xmouse,_y:mcRoot._ymouse});
    }
    function getTemporaryContainer()
    {

@@ -8,8 +8,8 @@ class dofus.datacenter.DofusMap extends ank.battlefield.datacenter.Map
    }
    function get coordinates()
    {
-      var _loc2_ = _global.API.lang.getMapText(this.id);
-      return _global.API.lang.getText("COORDINATES") + " : " + _loc2_.x + ", " + _loc2_.y;
+      var oMapText = _global.API.lang.getMapText(this.id);
+      return _global.API.lang.getText("COORDINATES") + " : " + oMapText.x + ", " + oMapText.y;
    }
    function get x()
    {
@@ -21,23 +21,23 @@ class dofus.datacenter.DofusMap extends ank.battlefield.datacenter.Map
    }
    function get superarea()
    {
-      var _loc2_ = _global.API.lang;
-      return _loc2_.getMapAreaInfos(this.subarea).superareaID;
+      var oLang = _global.API.lang;
+      return oLang.getMapAreaInfos(this.subarea).superareaID;
    }
    function get area()
    {
-      var _loc2_ = _global.API.lang;
-      return _loc2_.getMapAreaInfos(this.subarea).areaID;
+      var oLang = _global.API.lang;
+      return oLang.getMapAreaInfos(this.subarea).areaID;
    }
    function get subarea()
    {
-      var _loc2_ = _global.API.lang;
-      return _loc2_.getMapText(this.id).sa;
+      var oLang = _global.API.lang;
+      return oLang.getMapText(this.id).sa;
    }
    function get musics()
    {
-      var _loc2_ = _global.API.lang;
-      return _loc2_.getMapSubAreaText(this.subarea).m;
+      var oLang = _global.API.lang;
+      return oLang.getMapSubAreaText(this.subarea).m;
    }
    function get dungeonID()
    {
@@ -104,15 +104,15 @@ class dofus.datacenter.DofusMap extends ank.battlefield.datacenter.Map
    }
    function getMountPark(instance)
    {
-      var _loc3_ = 0;
-      while(_loc3_ < this.eaMountParks.length)
+      var i = 0;
+      while(i < this.eaMountParks.length)
       {
-         var _loc4_ = this.eaMountParks[_loc3_];
-         if(_loc4_.instanceId == instance)
+         var oPark = this.eaMountParks[i];
+         if(oPark.instanceId == instance)
          {
-            return _loc4_;
+            return oPark;
          }
-         _loc3_ = _loc3_ + 1;
+         i = i + 1;
       }
       return undefined;
    }

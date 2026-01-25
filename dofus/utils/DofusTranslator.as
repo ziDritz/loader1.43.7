@@ -24,32 +24,32 @@ class dofus.utils.DofusTranslator extends dofus.utils.ApiElement
       {
          aParams = [];
       }
-      var _loc4_ = [];
-      var _loc5_ = [];
-      var _loc6_ = 0;
-      while(_loc6_ < aParams.length)
+      var aReplacePatterns = [];
+      var aReplaceValues = [];
+      var i = 0;
+      while(i < aParams.length)
       {
-         _loc4_.push("%" + (_loc6_ + 1));
-         _loc5_.push(aParams[_loc6_]);
-         _loc6_ = _loc6_ + 1;
+         aReplacePatterns.push("%" + (i + 1));
+         aReplaceValues.push(aParams[i]);
+         i = i + 1;
       }
-      var _loc7_ = this.getValueFromSOLang(sKey);
-      if(_loc7_ == "" || _loc7_ == undefined)
+      var sTextValue = this.getValueFromSOLang(sKey);
+      if(sTextValue == "" || sTextValue == undefined)
       {
          return "!" + sKey + "!";
       }
-      return new ank.utils.ExtendedString(_loc7_).replace(_loc4_,_loc5_);
+      return new ank.utils.ExtendedString(sTextValue).replace(aReplacePatterns,aReplaceValues);
    }
    function getConfigText(sKey)
    {
-      var _loc3_ = this.getValueFromSOLang("C")[sKey];
-      if(typeof _loc3_ == "string")
+      var oConfig = this.getValueFromSOLang("C")[sKey];
+      if(typeof oConfig == "string")
       {
-         var _loc4_ = _loc3_;
-         var _loc5_ = new ank.utils.ExtendedString(_loc4_);
-         return _loc5_.replace(["%CMNT%","%CMNTT%"],[this.api.datacenter.Basics.aks_community_id,this.api.datacenter.Basics.aks_detected_country.toLowerCase()]);
+         var sConfigText = oConfig;
+         var oExtendedString = new ank.utils.ExtendedString(sConfigText);
+         return oExtendedString.replace(["%CMNT%","%CMNTT%"],[this.api.datacenter.Basics.aks_community_id,this.api.datacenter.Basics.aks_detected_country.toLowerCase()]);
       }
-      return _loc3_;
+      return oConfig;
    }
    function getAllMapsInfos()
    {
@@ -57,21 +57,21 @@ class dofus.utils.DofusTranslator extends dofus.utils.ApiElement
    }
    function getMapMaxChallenge(nMapID)
    {
-      var _loc3_ = this.getValueFromSOXtra("MA").m[nMapID].c;
-      if(_loc3_ == undefined || _global.isNaN(_loc3_))
+      var nChallenge = this.getValueFromSOXtra("MA").m[nMapID].c;
+      if(nChallenge == undefined || _global.isNaN(nChallenge))
       {
          return dofus.Constants.MAX_PLAYERS_IN_CHALLENGE;
       }
-      return _loc3_;
+      return nChallenge;
    }
    function getMapMaxTeam(nMapID)
    {
-      var _loc3_ = this.getValueFromSOXtra("MA").m[nMapID].t;
-      if(_loc3_ == undefined || _global.isNaN(_loc3_))
+      var nTeam = this.getValueFromSOXtra("MA").m[nMapID].t;
+      if(nTeam == undefined || _global.isNaN(nTeam))
       {
          return dofus.Constants.MAX_PLAYERS_IN_TEAM;
       }
-      return _loc3_;
+      return nTeam;
    }
    function getMapText(sKey)
    {
@@ -99,15 +99,15 @@ class dofus.utils.DofusTranslator extends dofus.utils.ApiElement
    }
    function getMapSubAreaName(nKey)
    {
-      var _loc3_ = String(this.getValueFromSOXtra("MA").sa[nKey].n);
-      return _loc3_.substr(0,2) != "//" ? _loc3_ : _loc3_.substr(2);
+      var sSubAreaName = String(this.getValueFromSOXtra("MA").sa[nKey].n);
+      return sSubAreaName.substr(0,2) != "//" ? sSubAreaName : sSubAreaName.substr(2);
    }
    function getMapAreaInfos(nSubAreaID)
    {
-      var _loc3_ = this.getValueFromSOXtra("MA").sa[nSubAreaID];
-      var _loc4_ = this.getValueFromSOXtra("MA").a[_loc3_.a];
-      var _loc5_ = this.getValueFromSOXtra("MA").a[_loc4_.sua];
-      return {superareaID:_loc4_.sua,superarea:_loc5_,areaID:_loc3_.a,area:_loc4_,subArea:_loc3_};
+      var oSubArea = this.getValueFromSOXtra("MA").sa[nSubAreaID];
+      var oArea = this.getValueFromSOXtra("MA").a[oSubArea.a];
+      var oSuperArea = this.getValueFromSOXtra("MA").a[oArea.sua];
+      return {superareaID:oArea.sua,superarea:oSuperArea,areaID:oSubArea.a,area:oArea,subArea:oSubArea};
    }
    function getItemSetText(nKey)
    {
@@ -303,10 +303,10 @@ class dofus.utils.DofusTranslator extends dofus.utils.ApiElement
    }
    function getEmoteID(sEmoteShortcut)
    {
-      var _loc3_ = this.getValueFromSOXtra("EM");
-      for(var k in _loc3_)
+      var oEmotes = this.getValueFromSOXtra("EM");
+      for(var k in oEmotes)
       {
-         if(_loc3_[k].s == sEmoteShortcut)
+         if(oEmotes[k].s == sEmoteShortcut)
          {
             return Number(k);
          }
@@ -569,8 +569,8 @@ class dofus.utils.DofusTranslator extends dofus.utils.ApiElement
    }
    function getGradeHonourPointsBounds(g)
    {
-      var _loc3_ = this.getValueFromSOXtra("PP").hp;
-      return {min:_loc3_[g - 1],max:_loc3_[g]};
+      var aHpBounds = this.getValueFromSOXtra("PP").hp;
+      return {min:aHpBounds[g - 1],max:aHpBounds[g]};
    }
    function getMaxDisgracePoints()
    {
@@ -594,19 +594,19 @@ class dofus.utils.DofusTranslator extends dofus.utils.ApiElement
    }
    function getHintsBy(prop, value)
    {
-      var _loc4_ = this.getValueFromSOXtra("HI");
-      var _loc5_ = [];
-      var _loc6_ = 0;
-      while(_loc6_ < _loc4_.length)
+      var oHints = this.getValueFromSOXtra("HI");
+      var aFilteredHints = [];
+      var i = 0;
+      while(i < oHints.length)
       {
-         var _loc7_ = _loc4_[_loc6_];
-         if(_loc7_[prop] == value)
+         var oHint = oHints[i];
+         if(oHint[prop] == value)
          {
-            _loc5_.push(_loc7_);
+            aFilteredHints.push(oHint);
          }
-         _loc6_ = _loc6_ + 1;
+         i = i + 1;
       }
-      return _loc5_;
+      return aFilteredHints;
    }
    function getHintsCategory(nID)
    {
@@ -714,55 +714,55 @@ class dofus.utils.DofusTranslator extends dofus.utils.ApiElement
    }
    function getLangFileSize(nDataBank, sLangFile)
    {
-      var _loc4_ = new String();
+      var sSoName = new String();
       if(sLangFile.toUpperCase() == "LANG")
       {
-         _loc4_ = dofus.Constants.GLOBAL_SO_LANG_NAME + "_" + nDataBank;
+         sSoName = dofus.Constants.GLOBAL_SO_LANG_NAME + "_" + nDataBank;
       }
       else
       {
          if(sLangFile.toUpperCase() == "TOTAL")
          {
-            var _loc5_ = this.getLangFileSize(nDataBank,"lang");
-            var _loc6_ = _global.API.lang.getConfigText("XTRA_FILE");
-            var _loc7_ = 0;
-            while(_loc7_ < _loc6_.length)
+            var nLangSize = this.getLangFileSize(nDataBank,"lang");
+            var aXtraFiles = _global.API.lang.getConfigText("XTRA_FILE");
+            var i = 0;
+            while(i < aXtraFiles.length)
             {
-               _loc5_ += this.getLangFileSize(_loc6_[_loc7_]);
-               _loc7_ = _loc7_ + 1;
+               nLangSize += this.getLangFileSize(aXtraFiles[i]);
+               i = i + 1;
             }
-            return _loc5_;
+            return nLangSize;
          }
-         _loc4_ = dofus.Constants.GLOBAL_SO_XTRA_NAME + "_" + nDataBank;
+         sSoName = dofus.Constants.GLOBAL_SO_XTRA_NAME + "_" + nDataBank;
       }
-      var _loc8_ = _global[_loc4_].data.WEIGHTS[sLangFile.toUpperCase()];
-      if(_loc8_ == undefined || _global.isNaN(_loc8_))
+      var nWeight = _global[sSoName].data.WEIGHTS[sLangFile.toUpperCase()];
+      if(nWeight == undefined || _global.isNaN(nWeight))
       {
          return 0;
       }
-      return _loc8_;
+      return nWeight;
    }
    function fetchString(s)
    {
-      var _loc3_ = new ank.utils.ExtendedString(s);
+      var oExtendedString = new ank.utils.ExtendedString(s);
       if(this.fetchIn == undefined || (this.fetchOut == undefined || this._nLastServerID != this.api.datacenter.Basics.aks_current_server.id))
       {
          this.fetchIn = [];
          this.fetchOut = [];
-         var _loc4_ = this.getServerSpecificTexts();
+         var oServerSpecificTexts = this.getServerSpecificTexts();
          this._nLastServerID = this.api.datacenter.Basics.aks_current_server.id;
-         for(var i in _loc4_)
+         for(var i in oServerSpecificTexts)
          {
-            var _loc5_ = this.getServerSpecificText(Number(i),this._nLastServerID);
-            if(_loc5_ == undefined)
+            var sSpecificText = this.getServerSpecificText(Number(i),this._nLastServerID);
+            if(sSpecificText == undefined)
             {
-               _loc5_ = _loc4_[i].d;
+               sSpecificText = oServerSpecificTexts[i].d;
             }
-            this.fetchIn.push("`SRVT:" + _loc4_[i].l + "`");
-            this.fetchOut.push(_loc5_);
+            this.fetchIn.push("`SRVT:" + oServerSpecificTexts[i].l + "`");
+            this.fetchOut.push(sSpecificText);
          }
       }
-      return _loc3_.replace(this.fetchIn,this.fetchOut);
+      return oExtendedString.replace(this.fetchIn,this.fetchOut);
    }
    function clearSOXtraCache()
    {
@@ -770,53 +770,53 @@ class dofus.utils.DofusTranslator extends dofus.utils.ApiElement
    }
    function getDataBank()
    {
-      var _loc2_ = this.api.datacenter.Basics.aks_current_server;
-      if(_loc2_ == undefined)
+      var oServer = this.api.datacenter.Basics.aks_current_server;
+      if(oServer == undefined)
       {
          return dofus.utils.DofusTranslator.STANDARD_DATA_BANK;
       }
-      return !_loc2_.isTemporis() ? dofus.utils.DofusTranslator.STANDARD_DATA_BANK : dofus.utils.DofusTranslator.TEMPORIS_DATA_BANK;
+      return !oServer.isTemporis() ? dofus.utils.DofusTranslator.STANDARD_DATA_BANK : dofus.utils.DofusTranslator.TEMPORIS_DATA_BANK;
    }
    function getValueFromSOLang(sKey)
    {
-      var _loc3_ = this.getDataBank();
-      var _loc4_ = dofus.Constants.GLOBAL_SO_LANG_NAME + "_" + _loc3_;
-      return _global[_loc4_].data[sKey];
+      var nDataBank = this.getDataBank();
+      var sSoName = dofus.Constants.GLOBAL_SO_LANG_NAME + "_" + nDataBank;
+      return _global[sSoName].data[sKey];
    }
    function getValueFromSOXtra(sKey, nForcedDataBank)
    {
       if(nForcedDataBank != undefined)
       {
-         var _loc4_ = nForcedDataBank;
+         var nDataBank = nForcedDataBank;
       }
       else
       {
-         _loc4_ = this.getDataBank();
+         nDataBank = this.getDataBank();
       }
-      var _loc5_ = dofus.Constants.XTRA_SHAREDOBJECT_NAME + "_" + _loc4_ + "_" + sKey;
-      var _loc6_ = _global[_loc5_];
-      if(_loc6_ == undefined)
+      var sSoName = dofus.Constants.XTRA_SHAREDOBJECT_NAME + "_" + nDataBank + "_" + sKey;
+      var oSharedObject = _global[sSoName];
+      if(oSharedObject == undefined)
       {
-         _global[_loc5_] = ank.utils.SharedObjectFix.getLocal(_loc5_);
-         _loc6_ = _global[_loc5_];
+         _global[sSoName] = ank.utils.SharedObjectFix.getLocal(sSoName);
+         oSharedObject = _global[sSoName];
       }
-      var _loc7_ = _loc6_.data[sKey];
-      if(_loc7_ instanceof Array)
+      var oValue = oSharedObject.data[sKey];
+      if(oValue instanceof Array)
       {
-         var _loc8_ = this._aSOXtraCache[_loc4_];
-         if(_loc8_ == undefined)
+         var aCachedData = this._aSOXtraCache[nDataBank];
+         if(aCachedData == undefined)
          {
-            _loc8_ = [];
-            this._aSOXtraCache[_loc4_] = _loc8_;
+            aCachedData = [];
+            this._aSOXtraCache[nDataBank] = aCachedData;
          }
-         var _loc9_ = _loc8_[sKey];
-         if(_loc9_ == undefined)
+         var aCachedValue = aCachedData[sKey];
+         if(aCachedValue == undefined)
          {
-            _loc9_ = _loc7_.slice();
-            _loc8_[sKey] = _loc9_;
+            aCachedValue = oValue.slice();
+            aCachedData[sKey] = aCachedValue;
          }
-         return _loc9_;
+         return aCachedValue;
       }
-      return _loc7_;
+      return oValue;
    }
 }
