@@ -1,3 +1,19 @@
+/**
+ * One-line class purpose
+ * Manages the lifecycle and rendering of sprites on the battlefield, including creation from server data.
+ *
+ * General description
+ * SpriteHandler is responsible for creating, positioning, animating, and removing sprite visual representations
+ * on the battlefield. It maintains the sprite data collection and handles the attachment of sprite movie clips
+ * to the appropriate display containers.
+ *
+ * Process-specific description
+ * In the sprite creation from server data workflow, SpriteHandler receives parsed sprite data objects
+ * (created by GameIn from server messages) and transforms them into visual sprites on the battlefield.
+ * It handles depth calculation, movie clip attachment, and initial positioning based on the server-provided
+ * cell number and direction.
+ */
+
 class ank.battlefield.SpriteHandler
 {
    /** @type MovieClip - Reference to the main battlefield display container */
@@ -31,10 +47,20 @@ class ank.battlefield.SpriteHandler
       // 1. Delegate to initialize() to set up field references
       this.initialize(b,c,d);
    }
+   /**
+    * Get current monster tooltip display state
+    * Purpose: Query whether monster group tooltips should be visible
+    * Returns: Boolean - True if tooltips are shown, false otherwise
+    */
    function get isShowingMonstersTooltip()
    {
       return ank.battlefield.SpriteHandler._bShowMonstersTooltip;
    }
+   /**
+    * Get current player sprite visibility state
+    * Purpose: Query whether player sprites are currently hidden
+    * Returns: Boolean - True if player sprites hidden, false if visible
+    */
    function get isPlayerSpritesHidden()
    {
       return ank.battlefield.SpriteHandler._bPlayerSpritesHidden;
@@ -861,8 +887,23 @@ class ank.battlefield.SpriteHandler
          }
       }
    }
+   /**
+    * Launch visual effect on target cell with optional sprite animation sequence
+    * Purpose: Display combat effect with sprite movement, animations, and blocking behavior
+    * @param sID:String - Casting sprite identifier
+    * @param oEffectData:Object - Effect definition with graphics and parameters
+    * @param nCellNum:Number - Target cell for effect display
+    * @param nDisplayType:Number - Display mode (0-51) controlling animation and blocking behavior
+    * @param mSpriteAnimation:Object/String - Animation sequence array [goAnim, castAnim, returnAnim, idleAnim] or string
+    * @param sTargetID:String - Optional target sprite identifier
+    * @param oSpriteToHideDuringAnimation:Object - Optional sprite to hide during animation sequence
+    * @param bForceVisible:Boolean - If true show effect regardless of sprite visibility
+    * @param bBlocking:Boolean - If true block until animation completes (default true)
+    * Data flow: Orchestrates sprite movement, animation sequences, effect display, sprite hiding
+    */
    function launchVisualEffect(sID, oEffectData, nCellNum, nDisplayType, mSpriteAnimation, sTargetID, oSpriteToHideDuringAnimation, bForceVisible, bBlocking)
    {
+      // 1. Default blocking behavior to true if undefined
       if(bBlocking == undefined)
       {
          bBlocking = true;
@@ -977,168 +1018,319 @@ class ank.battlefield.SpriteHandler
       }
       oSequencer.execute();
    }
+   /**
+    * Launch visual effect and throw/drop carried sprite
+    * Purpose: Animate carrying release with thrown object effect sequence
+    * @param sID:String - Carrier sprite identifier
+    * @param oEffectData:Object - Effect visualization data
+    * @param nCellNum:Number - Target landing cell for carried sprite
+    * @param nDisplayType:Number - Effect display mode
+    * Data flow: Triggers carrying animation, displays effect, uncarries child sprite at destination
+    */
    function launchCarriedSprite(sID, oEffectData, nCellNum, nDisplayType)
    {
+      // 1. Retrieve carrier sprite data
       var oSprite = this._oSprites.getItemAt(sID);
       var oSequencer = oSprite.sequencer;
       if(oSprite == undefined)
       {
+         // 2. Log error if sprite not found
          ank.utils.Logger.err("[launchCarriedSprite] Sprite " + sID + " inexistant");
          return undefined;
       }
+      // 3. Get reference to carried child sprite
       var oCarriedChild = oSprite.carriedChild;
+      // 4. Launch throwing animation and effect
       this.launchVisualEffect(sID,oEffectData,nCellNum,nDisplayType,"carringThrow",undefined,oCarriedChild);
+      // 5. Position child sprite at landing cell
       oSequencer.addAction(22,false,this,this.setSpritePosition,[oCarriedChild.id,nCellNum]);
+      // 6. Break carrying relationship and uncarry sprite
       this.uncarriedSprite(oCarriedChild.id,nCellNum,false,oSequencer);
+      // 7. Return carrier to idle pose
       oSequencer.addAction(23,false,this,this.setSpriteAnim,[sID,"static"]);
+      // 8. Execute all queued actions
       oSequencer.execute();
    }
+   /**
+    * Calculate and set sprite direction facing target cell
+    * Purpose: Automatically orient sprite toward another location
+    * @param sID:String - Sprite identifier
+    * @param nCellNum:Number - Target cell to face
+    * Data flow: Compares current and target locations, calculates direction, updates sprite facing
+    */
    function autoCalculateSpriteDirection(sID, nCellNum)
    {
+      // 1. Retrieve sprite data
       var oSprite = this._oSprites.getItemAt(sID);
       if(oSprite == undefined)
       {
          ank.utils.Logger.err("[launchVisualEffect] Sprite " + sID + " inexistant");
          return undefined;
       }
+      // 2. Check if target cell is different from current
       if(oSprite.cellNum != nCellNum)
       {
          var mcSprite = oSprite.mc;
+         // 3. Get current cell data
          var oCellData = this._mcBattlefield.mapHandler.getCellData(oSprite.cellNum);
+         // 4. Get target cell data
          var oTargetCellData = this._mcBattlefield.mapHandler.getCellData(nCellNum);
+         // 5. Calculate direction from current to target
          var nDirection = ank.battlefield.utils.Pathfinding.getDirectionFromCoordinates(oCellData.x,oCellData.rootY,oTargetCellData.x,oTargetCellData.rootY,false);
+         // 6. Set sprite facing direction
          mcSprite.setDirection(nDirection);
       }
    }
+   /**
+    * Convert sprite direction to four-way direction and update sprite
+    * Purpose: Simplify sprite direction from 8-way to 4-way (cardinal directions)
+    * @param sID:String - Sprite identifier
+    * Data flow: Retrieves current direction, converts to 4-way, applies to sprite
+    */
    function convertHeightToFourSpriteDirection(sID)
    {
+      // 1. Retrieve sprite data
       var oSprite = this._oSprites.getItemAt(sID);
       if(oSprite == undefined)
       {
          ank.utils.Logger.err("[convertHeightToFourSpriteDirection] Sprite " + sID + " inexistant");
          return undefined;
       }
+      // 2. Convert current direction to 4-way and apply
       this.setSpriteDirection(sID,ank.battlefield.utils.Pathfinding.convertHeightToFourDirection(oSprite.direction));
    }
+   /**
+    * Set sprite animation by name
+    * Purpose: Play single animation on sprite, clearing any running timers
+    * @param sID:String - Sprite identifier
+    * @param anim:String - Animation name to play
+    * @param bForced:Boolean - If true force animation regardless of state
+    * Data flow: Stops active timers, starts named animation on sprite
+    */
    function setSpriteAnim(sID, anim, bForced)
    {
+      // 1. Retrieve sprite data
       var oSprite = this._oSprites.getItemAt(sID);
       if(oSprite == undefined)
       {
          ank.utils.Logger.err("[setSpriteAnim(" + anim + ")] Sprite " + sID + " inexistant");
          return undefined;
       }
+      // 2. Remove any existing animation timer
       ank.utils.Timer.removeTimer(oSprite.mc,"battlefield");
+      // 3. Start animation on sprite MovieClip
       oSprite.mc.setAnim(anim,false,bForced);
    }
+   /**
+    * Set looping animation with timeout return to idle
+    * Purpose: Play animation in loop, return to static after timer expires
+    * @param sID:String - Sprite identifier
+    * @param anim:String - Animation name to loop
+    * @param nTimer:Number - Milliseconds before returning to static
+    * Data flow: Starts looping animation, schedules timeout to return to idle
+    */
    function setSpriteLoopAnim(sID, anim, nTimer)
    {
+      // 1. Retrieve sprite data
       var oSprite = this._oSprites.getItemAt(sID);
       if(oSprite == undefined)
       {
          ank.utils.Logger.err("[setSpriteLoopAnim] Sprite " + sID + " inexistant");
          return undefined;
       }
+      // 2. Remove any existing animation timer
       ank.utils.Timer.removeTimer(oSprite.mc,"battlefield");
+      // 3. Start animation in loop mode
       oSprite.mc.setAnim(anim,true);
+      // 4. Schedule return to static animation after timeout
       ank.utils.Timer.setTimer(oSprite.mc,"battlefield",oSprite.mc,oSprite.mc.setAnim,nTimer,["static"]);
    }
+   /**
+    * Set timed animation that reverts after specified duration
+    * Purpose: Play animation for fixed duration then return to previous state
+    * @param sID:String - Sprite identifier
+    * @param anim:String - Animation name to play
+    * @param bForced:Boolean - If true force animation regardless of state
+    * @param nTimer:Number - Duration in milliseconds before timeout
+    * Data flow: Stops current timers, starts timed animation with timeout
+    */
    function setSpriteTimerAnim(sID, anim, bForced, nTimer)
    {
+      // 1. Retrieve sprite data
       var oSprite = this._oSprites.getItemAt(sID);
       if(oSprite == undefined)
       {
          ank.utils.Logger.err("[setSpriteTimerAnim] Sprite " + sID + " inexistant");
          return undefined;
       }
+      // 2. Remove any existing animation timer
       ank.utils.Timer.removeTimer(oSprite.mc,"battlefield");
+      // 3. Start timed animation with timeout handling
       oSprite.mc.setAnimTimer(anim,false,bForced,nTimer);
    }
+   /**
+    * Change sprite graphics file
+    * Purpose: Switch sprite visual appearance by loading different graphics file
+    * @param sID:String - Sprite identifier
+    * @param sFile:String - Graphics file path to load
+    * Data flow: Updates sprite graphics if different, applies ghost mode alpha if enabled
+    */
    function setSpriteGfx(sID, sFile)
    {
+      // 1. Retrieve sprite data
       var oSprite = this._oSprites.getItemAt(sID);
       if(oSprite == undefined)
       {
          ank.utils.Logger.err("[setSpriteGfx] Sprite " + sID + " inexistant");
          return undefined;
       }
+      // 2. Update graphics if path is different
       if(sFile != oSprite.gfxFile)
       {
+         // 3. Store new graphics file path
          oSprite.gfxFile = sFile;
+         // 4. Redraw sprite with new graphics
          oSprite.mc.draw();
+         // 5. Reapply ghost mode transparency if enabled
          if(oSprite.allowGhostMode && this._mcBattlefield.bGhostView)
          {
             oSprite.mc.setAlpha(ank.battlefield.Constants.GHOSTVIEW_SPRITE_ALPHA);
          }
       }
    }
+   /**
+    * Apply color transformation to sprite
+    * Purpose: Modify sprite color/tint with color transform object
+    * @param sID:String - Sprite identifier
+    * @param t:Object - Color transformation parameters
+    * Data flow: Applies color transform to sprite MovieClip
+    */
    function setSpriteColorTransform(sID, t)
    {
+      // 1. Retrieve sprite data
       var oSprite = this._oSprites.getItemAt(sID);
       if(oSprite == undefined)
       {
          ank.utils.Logger.err("[setSpriteColorTransform] Sprite " + sID + " inexistant");
          return undefined;
       }
+      // 2. Apply color transform to sprite MovieClip
       oSprite.mc.setColorTransform(t);
    }
+   /**
+    * Set sprite transparency level
+    * Purpose: Control sprite opacity from 0 (invisible) to 100 (opaque)
+    * @param sID:String - Sprite identifier
+    * @param nAlpha:Number - Alpha value (0-100)
+    * Data flow: Sets transparency on sprite MovieClip
+    */
    function setSpriteAlpha(sID, nAlpha)
    {
+      // 1. Retrieve sprite data
       var oSprite = this._oSprites.getItemAt(sID);
       if(oSprite == undefined)
       {
          ank.utils.Logger.err("[setSpriteAlpha] Sprite " + sID + " inexistant");
          return undefined;
       }
+      // 2. Set sprite transparency level
       oSprite.mc.setAlpha(nAlpha);
    }
+   /**
+    * Add extra visual clip overlay to sprite
+    * Purpose: Attach additional graphics file overlay on top of sprite (e.g. status effects, buffs)
+    * @param sID:String - Sprite identifier
+    * @param clipFile:String - Overlay graphics file path
+    * @param col:Number - Color tint for overlay
+    * @param bTop:Boolean - If true place on top layer, if false place below
+    * Data flow: Attaches external clip to sprite LayerContainer
+    */
    function addSpriteExtraClip(sID, clipFile, col, bTop)
    {
+      // 1. Retrieve sprite data
       var oSprite = this._oSprites.getItemAt(sID);
       if(oSprite == undefined)
       {
          ank.utils.Logger.err("[addSpriteExtraClip] Sprite " + sID + " inexistant");
          return undefined;
       }
+      // 2. Add extra clip to sprite
       oSprite.mc.addExtraClip(clipFile,col,bTop);
    }
+   /**
+    * Remove extra visual clip overlay from sprite
+    * Purpose: Detach previously added overlay graphics
+    * @param sID:String - Sprite identifier
+    * @param bTop:Boolean - If true remove top layer, if false remove bottom
+    * Data flow: Removes external clip from sprite
+    */
    function removeSpriteExtraClip(sID, bTop)
    {
+      // 1. Retrieve sprite data
       var oSprite = this._oSprites.getItemAt(sID);
       if(oSprite == undefined)
       {
          ank.utils.Logger.err("[removeSpriteExtraClip] Sprite " + sID + " inexistant");
          return undefined;
       }
+      // 2. Remove extra clip from sprite
       oSprite.mc.removeExtraClip(bTop);
    }
+   /**
+    * Display floating damage/healing text above sprite
+    * Purpose: Show combat value indicator (damage, healing, crit) above sprite
+    * @param sID:String - Sprite identifier
+    * @param value:Number - Numerical value to display
+    * @param col:Number - Color code for display (red=damage, green=healing, etc)
+    * Data flow: Triggers points display animation on sprite
+    */
    function showSpritePoints(sID, value, col)
    {
+      // 1. Retrieve sprite data
       var oSprite = this._oSprites.getItemAt(sID);
       if(oSprite == undefined)
       {
          ank.utils.Logger.err("[showSpritePoints] Sprite " + sID + " inexistant");
          return undefined;
       }
+      // 2. Display floating points above sprite
       oSprite.mc.showPoints(value,col);
    }
+   /**
+    * Toggle ghost view mode for all sprites
+    * Purpose: Apply or remove semi-transparent effect for wall-hiding mode
+    * @param bool:Boolean - If true enable ghost view alpha, if false normal visibility
+    * Data flow: Iterates all sprites, applies ghost transparency to those supporting it
+    */
    function setSpriteGhostView(bool)
    {
+      // 1. Retrieve all sprite items
       var oItems = this._oSprites.getItems();
+      // 2. Iterate through sprites
       for(var k in oItems)
       {
          var oSprite = this._oSprites.getItemAt(k);
+         // 3. Apply ghost view transparency if allowed on sprite
          oSprite.mc.setGhostView(oSprite.allowGhostMode && bool);
       }
    }
+   /**
+    * Select or deselect sprite with visual highlight
+    * Purpose: Apply selection highlight to sprite and all linked children
+    * @param sID:String - Sprite identifier
+    * @param bSelect:Boolean - If true highlight sprite, if false remove highlight
+    * Data flow: Recursively applies selection state to sprite and all child sprites
+    */
    function selectSprite(sID, bSelect)
    {
+      // 1. Retrieve sprite data
       var oSprite = this._oSprites.getItemAt(sID);
       if(oSprite == undefined)
       {
          ank.utils.Logger.err("[selectSprite] Sprite " + sID + " inexistant");
          return undefined;
       }
+      // 2. Recursively select all child sprites
       if(oSprite.hasChilds)
       {
          var oChildsItems = oSprite.linkedChilds.getItems();
@@ -1147,16 +1339,27 @@ class ank.battlefield.SpriteHandler
             this.selectSprite(oChildsItems[k].id,bSelect);
          }
       }
+      // 3. Apply selection highlight to sprite
       oSprite.mc.select(bSelect);
    }
+   /**
+    * Scale sprite horizontally and vertically
+    * Purpose: Resize sprite graphics independently on each axis
+    * @param sID:String - Sprite identifier
+    * @param nScaleX:Number - Horizontal scale factor (1.0 = 100%)
+    * @param nScaleY:Number - Vertical scale factor (1.0 = 100%)
+    * Data flow: Updates sprite scale properties
+    */
    function setSpriteScale(sID, nScaleX, nScaleY)
    {
+      // 1. Retrieve sprite data
       var oSprite = this._oSprites.getItemAt(sID);
       if(oSprite == undefined)
       {
          ank.utils.Logger.err("[selectSprite] Sprite " + sID + " inexistant");
          return undefined;
       }
+      // 2. Set sprite scale on both axes
       oSprite.mc.setScale(nScaleX,nScaleY);
    }
 }
