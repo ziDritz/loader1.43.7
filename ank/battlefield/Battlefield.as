@@ -1,3 +1,17 @@
+/**
+ * One-line class purpose
+ * `Battlefield` serves as the main container and coordinator for rendering operations,
+ * including sprite creation and management from server data on the isometric battlefield.
+ *
+ * In Sprite Create from Server Data process
+ * The sprite creation process in Battlefield.as follows a delegation pattern where Battlefield
+ * methods act as facades to **SpriteHandler** operations. Server data flows through the datacenter
+ * and is processed by specialized handlers. The actual sprite rendering and MovieClip creation happens
+ * in SpriteHandler and the Sprite MC class, which are not covered here but are essential to the
+ * complete sprite creation workflow.
+ */
+
+
 class ank.battlefield.Battlefield extends MovieClip
 {
    var _bMapBuild;
@@ -91,27 +105,48 @@ class ank.battlefield.Battlefield extends MovieClip
    {
       return this._bShowCellId;
    }
-   function initialize(oDatacenter, sGroundFile, sObjectFile, sAccessoriesPath, api)
-   {
-      this._oDatacenter = oDatacenter;
-      this._sGroundFile = sGroundFile;
-      api;
-      if(!this.initializeDatacenter())
-      {
-         ank.utils.Logger.err("BattleField -> Init datacenter impossible");
-         this.onInitError();
-      }
-      ank.utils.Extensions.addExtensions();
-      if(_global.GAC == undefined)
-      {
-         _global.GAC = new ank.battlefield.GlobalSpriteHandler();
-         _global.GAC.setAccessoriesRoot(sAccessoriesPath);
-      }
-      this.attachClassMovie(ank.battlefield.mc.Container,"_mcMainContainer",10,[this,this._oDatacenter,sObjectFile]);
-      this._bMapBuild = false;
-      this.loadManager = new ank.battlefield.LoadManager(this.createEmptyMovieClip("LoadManager",this.getNextHighestDepth()));
-      this.fightPointAnimManager = new dofus.managers.FightPointAnimManager(api);
-   }
+
+
+  /**
+   * initialize
+   * Purpose: Sets up battlefield infrastructure including datacenter and handlers for sprite operations
+   * Parameters:
+   *   oDatacenter: Central data store for battlefield state
+   *   sGroundFile: Path to ground graphics file
+   *   sObjectFile: Path to object graphics file
+   *   sAccessoriesPath: Path for sprite accessories
+   *   api: Game API reference
+   * Data flow: Server data → datacenter initialization → handler setup → sprite creation infrastructure
+   */
+  function initialize(oDatacenter, sGroundFile, sObjectFile, sAccessoriesPath, api)
+  {
+    // Step 1: Store datacenter reference and file paths
+    this._oDatacenter = oDatacenter;
+    this._sGroundFile = sGroundFile;
+    api;
+
+    // Step 2: Initialize datacenter structures (Map and Sprites)
+    if(!this.initializeDatacenter())
+    {
+      ank.utils.Logger.err("BattleField -> Init datacenter impossible");
+      this.onInitError();
+    }
+    ank.utils.Extensions.addExtensions();
+
+    // Step 3: Set up GlobalSpriteHandler for sprite management
+    if(_global.GAC == undefined)
+    {
+      _global.GAC = new ank.battlefield.GlobalSpriteHandler();
+      _global.GAC.setAccessoriesRoot(sAccessoriesPath);
+    }
+
+    // Step 4: Create main container and load managers
+    this.attachClassMovie(ank.battlefield.mc.Container,"_mcMainContainer",10,[this,this._oDatacenter,sObjectFile]);
+    this._bMapBuild = false;
+    this.loadManager = new ank.battlefield.LoadManager(this.createEmptyMovieClip("LoadManager",this.getNextHighestDepth()));
+    this.fightPointAnimManager = new dofus.managers.FightPointAnimManager(api);
+  }
+
    function setStreaming(status, objectsDir, groundsDir)
    {
       ank.battlefield.Constants.USE_STREAMING_FILES = status;
@@ -522,26 +557,67 @@ class ank.battlefield.Battlefield extends MovieClip
       }
       this.pointerHandler.draw(nCellNum);
    }
-   function getSprite(sID)
-   {
-      return this.spriteHandler.getSprite(sID);
-   }
-   function getSprites()
-   {
-      return this.spriteHandler.getSprites();
-   }
-   function isOnBattlefield(sID)
-   {
-      return this.spriteHandler.getSpriteMc(sID) != undefined;
-   }
-   function addSprite(sID, spriteData)
-   {
-      if(!this.isMapBuild)
-      {
-         return undefined;
-      }
-      this.spriteHandler.addSprite(sID,spriteData);
-   }
+
+
+  /**
+   * Purpose: Retrieves sprite data by ID
+   * Parameters:
+   *   sID: Sprite identifier to retrieve
+   * Data flow: Sprite ID → SpriteHandler.getSprite() → sprite data object
+   */
+  function getSprite(sID)
+  {
+    // Step 1: Delegate to spriteHandler to retrieve sprite data
+    return this.spriteHandler.getSprite(sID);
+  }
+
+
+  /**
+   * Purpose: Retrieves all sprites collection
+   * Parameters: None
+   * Data flow: Request → SpriteHandler.getSprites() → all sprites data
+   */
+  function getSprites()
+  {
+    // Step 1: Delegate to spriteHandler to get sprites collection
+    return this.spriteHandler.getSprites();
+  }
+
+
+  /**
+   * Purpose: Checks if a sprite exists on the battlefield
+   * Parameters:
+   *   sID: Sprite ID to check
+   * Data flow: Sprite ID → SpriteHandler.getSpriteMc() → boolean existence check
+   */
+  function isOnBattlefield(sID)
+  {
+    // Step 1: Delegate to spriteHandler to check sprite existence
+    return this.spriteHandler.getSpriteMc(sID) != undefined;
+  }
+
+
+
+  /**
+   * addSprite
+   * Purpose: Creates and adds a new sprite to the battlefield from server data
+   * Parameters:
+   *   sID: Unique sprite identifier from server
+   *   spriteData: Server-provided sprite data object containing properties like gfx, position, direction
+   * Data flow: Server sprite data → Battlefield.addSprite() → SpriteHandler.addSprite() → visual sprite on battlefield
+   */
+  function addSprite(sID, spriteData)
+  {
+    // Step 1: Verify map is built before proceeding
+    if(!this.isMapBuild)
+    {
+      return undefined;
+    }
+
+    // Step 2: Delegate to spriteHandler for actual sprite creation and rendering
+    this.spriteHandler.addSprite(sID,spriteData);
+  }
+
    function addLinkedSprite(sID, sParentID, nChildIndex, oSprite)
    {
       if(!this.isMapBuild)
@@ -590,18 +666,43 @@ class ank.battlefield.Battlefield extends MovieClip
       }
       this.spriteHandler.unmountSprite(sID);
    }
-   function clearAllSprites(bKeepData)
-   {
-      this.spriteHandler.clear(bKeepData);
-   }
-   function removeSprite(sID, bKeepData)
-   {
-      if(!this.isMapBuild)
-      {
-         return undefined;
-      }
-      this.spriteHandler.removeSprite(sID,bKeepData);
-   }
+
+
+  /**
+   * clearAllSprites
+   * Purpose: Removes all sprites from battlefield
+   * Parameters:
+   *   bKeepData: Whether to preserve sprite data
+   * Data flow: Clear command → SpriteHandler.clear() → all sprites removed
+   */
+  function clearAllSprites(bKeepData)
+  {
+    // Step 1: Delegate to spriteHandler to clear all sprites
+    this.spriteHandler.clear(bKeepData);
+  }
+
+
+  /**
+   * removeSprite
+   * Purpose: Removes a sprite from the battlefield
+   * Parameters:
+   *   sID: Sprite ID to remove
+   *   bKeepData: Whether to keep sprite data in memory
+   * Data flow: Sprite removal command → SpriteHandler.removeSprite() → sprite removed from battlefield
+   */
+  function removeSprite(sID, bKeepData)
+  {
+    // Step 1: Verify map is built
+    if(!this.isMapBuild)
+    {
+      return undefined;
+    }
+
+    // Step 2: Delegate to spriteHandler for sprite removal
+    this.spriteHandler.removeSprite(sID,bKeepData);
+  }
+
+
    function hideSprite(sID, bool)
    {
       if(!this.isMapBuild)
