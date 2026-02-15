@@ -13,7 +13,7 @@ class ank.battlefield.utils.Pathfinding
    }
    static function pathFind(api, mapHandler, nCellBegin, nCellEnd, oParams)
    {
-      var _loc7_ = api.datacenter.Game.isFight;
+      var bIsFight_b = api.datacenter.Game.isFight;
       if(nCellBegin == undefined)
       {
          return null;
@@ -22,183 +22,183 @@ class ank.battlefield.utils.Pathfinding
       {
          return null;
       }
-      if(_loc7_ == undefined)
+      if(bIsFight_b == undefined)
       {
-         _loc7_ = false;
+         bIsFight_b = false;
       }
-      var _loc8_ = oParams.bAllDirections != undefined ? oParams.bAllDirections : true;
-      var _loc9_ = oParams.nMaxLength != undefined ? oParams.nMaxLength : 500;
-      var _loc10_ = oParams.bIgnoreSprites != undefined ? oParams.bIgnoreSprites : false;
-      var _loc11_ = oParams.bCellNumOnly != undefined ? oParams.bCellNumOnly : false;
-      var _loc12_ = oParams.bWithBeginCellNum != undefined ? oParams.bWithBeginCellNum : false;
-      var _loc13_ = mapHandler.getWidth();
-      if(_loc8_)
+      var bAllDirections_b = oParams.bAllDirections != undefined ? oParams.bAllDirections : true;
+      var nMaxLength_n = oParams.nMaxLength != undefined ? oParams.nMaxLength : 500;
+      var bIgnoreSprites_b = oParams.bIgnoreSprites != undefined ? oParams.bIgnoreSprites : false;
+      var bCellNumOnly_b = oParams.bCellNumOnly != undefined ? oParams.bCellNumOnly : false;
+      var bWithBeginCellNum_b = oParams.bWithBeginCellNum != undefined ? oParams.bWithBeginCellNum : false;
+      var nMapWidth_n = mapHandler.getWidth();
+      if(bAllDirections_b)
       {
-         var _loc14_ = 8;
-         var _loc15_ = [1,_loc13_,_loc13_ * 2 - 1,_loc13_ - 1,-1,- _loc13_,- _loc13_ * 2 + 1,- (_loc13_ - 1)];
-         var _loc16_ = [1.5,1,1.5,1,1.5,1,1.5,1];
+         var nDirCount_n = 8;
+         var aDirOffsets_a = [1,nMapWidth_n,nMapWidth_n * 2 - 1,nMapWidth_n - 1,-1,- nMapWidth_n,- nMapWidth_n * 2 + 1,- (nMapWidth_n - 1)];
+         var aDirCosts_a = [1.5,1,1.5,1,1.5,1,1.5,1];
       }
       else
       {
-         _loc14_ = 4;
-         _loc15_ = [_loc13_,_loc13_ - 1,- _loc13_,- (_loc13_ - 1)];
-         _loc16_ = [1,1,1,1];
+         nDirCount_n = 4;
+         aDirOffsets_a = [nMapWidth_n,nMapWidth_n - 1,- nMapWidth_n,- (nMapWidth_n - 1)];
+         aDirCosts_a = [1,1,1,1];
       }
-      var _loc17_ = mapHandler.getCellsData();
-      var _loc18_ = {};
-      var _loc19_ = {};
-      var _loc20_ = false;
-      var _loc0_ = null;
-      var _loc21_ = _loc18_["oCell" + nCellBegin] = {};
-      _loc21_.num = nCellBegin;
-      _loc21_.g = 0;
-      _loc21_.v = 0;
-      _loc21_.h = ank.battlefield.utils.Pathfinding.goalDistEstimate(mapHandler,nCellBegin,nCellEnd);
-      _loc21_.f = _loc21_.h;
-      _loc21_.l = _loc17_[nCellBegin].groundLevel;
-      _loc21_.m = _loc17_[nCellBegin].movement;
-      _loc21_.parent = null;
-      var _loc22_ = [];
-      var _loc23_ = 0;
-      while(_loc23_ < _loc17_.length - 1)
+      var aCellsData_a = mapHandler.getCellsData();
+      var oOpenList_o = {};
+      var oClosedList_o = {};
+      var bOpenEmpty_b = false;
+      var oResult_o = null;
+      var oStartNode_o = oOpenList_o["oCell" + nCellBegin] = {};
+      oStartNode_o.num = nCellBegin;
+      oStartNode_o.g = 0;
+      oStartNode_o.v = 0;
+      oStartNode_o.h = ank.battlefield.utils.Pathfinding.goalDistEstimate(mapHandler,nCellBegin,nCellEnd);
+      oStartNode_o.f = oStartNode_o.h;
+      oStartNode_o.l = aCellsData_a[nCellBegin].groundLevel;
+      oStartNode_o.m = aCellsData_a[nCellBegin].movement;
+      oStartNode_o.parent = null;
+      var aUnwalkableLayer_a = [];
+      var nIndex_n = 0;
+      while(nIndex_n < aCellsData_a.length - 1)
       {
-         _loc22_[_loc23_] = _loc17_[_loc23_].isUnwalkableLayerObject;
-         _loc23_ = _loc23_ + 1;
+         aUnwalkableLayer_a[nIndex_n] = aCellsData_a[nIndex_n].isUnwalkableLayerObject;
+         nIndex_n = nIndex_n + 1;
       }
-      var _loc24_ = [];
-      if(!_loc10_ && !_loc7_)
+      var aTriggerCells_a = [];
+      if(!bIgnoreSprites_b && !bIsFight_b)
       {
-         var _loc25_ = 0;
-         while(_loc25_ < _loc17_.length - 1)
+         var nTriggerIndex_n = 0;
+         while(nTriggerIndex_n < aCellsData_a.length - 1)
          {
-            _loc24_[_loc25_] = _loc17_[_loc25_].isTrigger;
-            _loc25_ = _loc25_ + 1;
+            aTriggerCells_a[nTriggerIndex_n] = aCellsData_a[nTriggerIndex_n].isTrigger;
+            nTriggerIndex_n = nTriggerIndex_n + 1;
          }
       }
-      while(!_loc20_)
+      while(!bOpenEmpty_b)
       {
-         var _loc26_ = null;
-         var _loc27_ = 500000;
-         for(var k in _loc18_)
+         var sBestKey_s = null;
+         var nBestF_n = 500000;
+         for(var k in oOpenList_o)
          {
-            if(_loc18_[k].f < _loc27_)
+            if(oOpenList_o[k].f < nBestF_n)
             {
-               _loc27_ = _loc18_[k].f;
-               _loc26_ = k;
+               nBestF_n = oOpenList_o[k].f;
+               sBestKey_s = k;
             }
          }
-         var _loc28_ = _loc18_[_loc26_];
-         delete _loc18_[_loc26_];
-         if(_loc28_.num == nCellEnd)
+         var oCurrentNode_o = oOpenList_o[sBestKey_s];
+         delete oOpenList_o[sBestKey_s];
+         if(oCurrentNode_o.num == nCellEnd)
          {
-            var _loc29_ = [];
-            while(_loc28_.num != nCellBegin)
+            var aPath_a = [];
+            while(oCurrentNode_o.num != nCellBegin)
             {
-               if(_loc28_.m == 0)
+               if(oCurrentNode_o.m == 0)
                {
-                  _loc29_ = [];
+                  aPath_a = [];
                }
-               else if(_loc11_)
+               else if(bCellNumOnly_b)
                {
-                  _loc29_.splice(0,0,_loc28_.num);
+                  aPath_a.splice(0,0,oCurrentNode_o.num);
                }
                else
                {
-                  _loc29_.splice(0,0,{num:_loc28_.num,dir:ank.battlefield.utils.Pathfinding.getDirection(mapHandler,_loc28_.parent.num,_loc28_.num)});
+                  aPath_a.splice(0,0,{num:oCurrentNode_o.num,dir:ank.battlefield.utils.Pathfinding.getDirection(mapHandler,oCurrentNode_o.parent.num,oCurrentNode_o.num)});
                }
-               _loc28_ = _loc28_.parent;
+               oCurrentNode_o = oCurrentNode_o.parent;
             }
-            if(_loc12_)
+            if(bWithBeginCellNum_b)
             {
-               if(_loc11_)
+               if(bCellNumOnly_b)
                {
-                  _loc29_.splice(0,0,nCellBegin);
+                  aPath_a.splice(0,0,nCellBegin);
                }
                else
                {
-                  _loc29_.splice(0,0,{num:nCellBegin,dir:ank.battlefield.utils.Pathfinding.getDirection(mapHandler,_loc28_.parent.num,nCellBegin)});
+                  aPath_a.splice(0,0,{num:nCellBegin,dir:ank.battlefield.utils.Pathfinding.getDirection(mapHandler,oCurrentNode_o.parent.num,nCellBegin)});
                }
             }
-            return _loc29_;
+            return aPath_a;
          }
-         var _loc30_ = false;
-         var _loc31_ = 0;
-         for(; _loc31_ < _loc14_; _loc31_ = _loc31_ + 1)
+         var bEndMovementBlocked_b = false;
+         var nDirIdx_n = 0;
+         for(; nDirIdx_n < nDirCount_n; nDirIdx_n = nDirIdx_n + 1)
          {
-            var _loc32_ = _loc28_.num + _loc15_[_loc31_];
-            if(Math.abs(_loc17_[_loc32_].x - _loc17_[_loc28_.num].x) <= 53)
+            var nNeighborCell_n = oCurrentNode_o.num + aDirOffsets_a[nDirIdx_n];
+            if(Math.abs(aCellsData_a[nNeighborCell_n].x - aCellsData_a[oCurrentNode_o.num].x) <= 53)
             {
-               var _loc33_ = _loc17_[_loc32_];
-               _loc30_ = !(_loc32_ == nCellEnd && _loc33_.movement == 1) ? false : true;
-               var _loc34_ = _loc33_.groundLevel;
-               var _loc35_ = _loc28_.l == undefined || Math.abs(_loc34_ - _loc28_.l) < 2;
-               if(!_loc35_ || (!_loc33_.active || _loc33_.movement == 1 && !_loc30_))
+               var oNeighborCell_o = aCellsData_a[nNeighborCell_n];
+               bEndMovementBlocked_b = !(nNeighborCell_n == nCellEnd && oNeighborCell_o.movement == 1) ? false : true;
+               var nNeighborGroundLevel_n = oNeighborCell_o.groundLevel;
+               var bLevelOk_b = oCurrentNode_o.l == undefined || Math.abs(nNeighborGroundLevel_n - oCurrentNode_o.l) < 2;
+               if(!bLevelOk_b || (!oNeighborCell_o.active || oNeighborCell_o.movement == 1 && !bEndMovementBlocked_b))
                {
                   continue;
                }
-               var _loc36_ = true;
-               if(!_loc10_)
+               var bPassable_b = true;
+               if(!bIgnoreSprites_b)
                {
-                  var _loc37_ = _loc33_.spriteOnID;
-                  if(_loc7_)
+                  var nSpriteId_n = oNeighborCell_o.spriteOnID;
+                  if(bIsFight_b)
                   {
-                     _loc36_ = _loc37_ == undefined ? true : false;
+                     bPassable_b = nSpriteId_n == undefined ? true : false;
                   }
                   else
                   {
-                     var _loc38_ = api.gfx.spriteHandler.getSprite(_loc37_);
-                     _loc36_ = !(_loc38_ != undefined && (_loc38_ instanceof dofus.datacenter.Character && _loc32_ != nCellEnd)) ? true : false;
+                     var oSprite_o = api.gfx.spriteHandler.getSprite(nSpriteId_n);
+                     bPassable_b = !(oSprite_o != undefined && (oSprite_o instanceof dofus.datacenter.Character && nNeighborCell_n != nCellEnd)) ? true : false;
                   }
-                  if(_loc36_ && (_loc32_ != nCellEnd && _loc24_[_loc32_] == true))
+                  if(bPassable_b && (nNeighborCell_n != nCellEnd && aTriggerCells_a[nNeighborCell_n] == true))
                   {
-                     _loc36_ = false;
+                     bPassable_b = false;
                   }
                }
-               if(_loc36_ && (_loc32_ != nCellEnd && _loc22_[_loc32_] == true))
+               if(bPassable_b && (nNeighborCell_n != nCellEnd && aUnwalkableLayer_a[nNeighborCell_n] == true))
                {
-                  _loc36_ = false;
+                  bPassable_b = false;
                }
-               if(!_loc36_)
+               if(!bPassable_b)
                {
                   continue;
                }
-               var _loc39_ = "oCell" + _loc32_;
-               var _loc40_ = _loc28_.v + _loc16_[_loc31_] + (!(_loc33_.movement == 0 || _loc33_.movement == 1) ? 0 : 1000 + (_loc31_ % 2 != 0 ? 0 : 3)) + (!(_loc33_.movement == 1 && _loc30_) ? (_loc31_ == _loc28_.d ? 0 : 0.5) + (5 - _loc33_.movement) / 3 : -1000);
-               var _loc41_ = _loc28_.g + _loc16_[_loc31_];
-               var _loc42_ = null;
-               if(_loc18_[_loc39_])
+               var sNeighborKey_s = "oCell" + nNeighborCell_n;
+               var nVcost_n = oCurrentNode_o.v + aDirCosts_a[nDirIdx_n] + (!(oNeighborCell_o.movement == 0 || oNeighborCell_o.movement == 1) ? 0 : 1000 + (nDirIdx_n % 2 != 0 ? 0 : 3)) + (!(oNeighborCell_o.movement == 1 && bEndMovementBlocked_b) ? (nDirIdx_n == oCurrentNode_o.d ? 0 : 0.5) + (5 - oNeighborCell_o.movement) / 3 : -1000);
+               var nGcost_n = oCurrentNode_o.g + aDirCosts_a[nDirIdx_n];
+               var nExistingVcost_n = null;
+               if(oOpenList_o[sNeighborKey_s])
                {
-                  _loc42_ = _loc18_[_loc39_].v;
+                  nExistingVcost_n = oOpenList_o[sNeighborKey_s].v;
                }
-               else if(_loc19_[_loc39_])
+               else if(oClosedList_o[sNeighborKey_s])
                {
-                  _loc42_ = _loc19_[_loc39_].v;
+                  nExistingVcost_n = oClosedList_o[sNeighborKey_s].v;
                }
-               if((_loc42_ == null || _loc42_ > _loc40_) && _loc41_ <= _loc9_)
+               if((nExistingVcost_n == null || nExistingVcost_n > nVcost_n) && nGcost_n <= nMaxLength_n)
                {
-                  if(_loc19_[_loc39_])
+                  if(oClosedList_o[sNeighborKey_s])
                   {
-                     delete _loc19_[_loc39_];
+                     delete oClosedList_o[sNeighborKey_s];
                   }
-                  var _loc43_ = {};
-                  _loc43_.num = _loc32_;
-                  _loc43_.g = _loc41_;
-                  _loc43_.v = _loc40_;
-                  _loc43_.h = ank.battlefield.utils.Pathfinding.goalDistEstimate(mapHandler,_loc32_,nCellEnd);
-                  _loc43_.f = _loc43_.v + _loc43_.h;
-                  _loc43_.d = _loc31_;
-                  _loc43_.l = _loc34_;
-                  _loc43_.m = _loc33_.movement;
-                  _loc43_.parent = _loc28_;
-                  _loc18_[_loc39_] = _loc43_;
+                  var oNewNode_o = {};
+                  oNewNode_o.num = nNeighborCell_n;
+                  oNewNode_o.g = nGcost_n;
+                  oNewNode_o.v = nVcost_n;
+                  oNewNode_o.h = ank.battlefield.utils.Pathfinding.goalDistEstimate(mapHandler,nNeighborCell_n,nCellEnd);
+                  oNewNode_o.f = oNewNode_o.v + oNewNode_o.h;
+                  oNewNode_o.d = nDirIdx_n;
+                  oNewNode_o.l = nNeighborGroundLevel_n;
+                  oNewNode_o.m = oNeighborCell_o.movement;
+                  oNewNode_o.parent = oCurrentNode_o;
+                  oOpenList_o[sNeighborKey_s] = oNewNode_o;
                }
             }
          }
-         _loc19_["oCell" + _loc28_.num] = {v:_loc28_.v};
-         _loc20_ = true;
-         for(var k in _loc18_)
+         oClosedList_o["oCell" + oCurrentNode_o.num] = {v:oCurrentNode_o.v};
+         bOpenEmpty_b = true;
+         for(var k in oOpenList_o)
          {
-            _loc20_ = false;
+            bOpenEmpty_b = false;
             break;
          }
       }
@@ -206,30 +206,30 @@ class ank.battlefield.utils.Pathfinding
    }
    static function goalDistEstimate(mapHandler, nCell1, nCell2)
    {
-      var _loc5_ = ank.battlefield.utils.Pathfinding.getCaseCoordonnee(mapHandler,nCell1);
-      var _loc6_ = ank.battlefield.utils.Pathfinding.getCaseCoordonnee(mapHandler,nCell2);
-      var _loc7_ = Math.abs(_loc5_.x - _loc6_.x);
-      var _loc8_ = Math.abs(_loc5_.y - _loc6_.y);
-      return Math.sqrt(Math.pow(_loc7_,2) + Math.pow(_loc8_,2));
+      var oCoords1_o = ank.battlefield.utils.Pathfinding.getCaseCoordonnee(mapHandler,nCell1);
+      var oCoords2_o = ank.battlefield.utils.Pathfinding.getCaseCoordonnee(mapHandler,nCell2);
+      var nDx_n = Math.abs(oCoords1_o.x - oCoords2_o.x);
+      var nDy_n = Math.abs(oCoords1_o.y - oCoords2_o.y);
+      return Math.sqrt(Math.pow(nDx_n,2) + Math.pow(nDy_n,2));
    }
    static function goalDistance(mapHandler, nCell1, nCell2)
    {
-      var _loc5_ = ank.battlefield.utils.Pathfinding.getCaseCoordonnee(mapHandler,nCell1);
-      var _loc6_ = ank.battlefield.utils.Pathfinding.getCaseCoordonnee(mapHandler,nCell2);
-      var _loc7_ = Math.abs(_loc5_.x - _loc6_.x);
-      var _loc8_ = Math.abs(_loc5_.y - _loc6_.y);
-      return _loc7_ + _loc8_;
+      var oCoordsA_o = ank.battlefield.utils.Pathfinding.getCaseCoordonnee(mapHandler,nCell1);
+      var oCoordsB_o = ank.battlefield.utils.Pathfinding.getCaseCoordonnee(mapHandler,nCell2);
+      var nDx_n = Math.abs(oCoordsA_o.x - oCoordsB_o.x);
+      var nDy_n = Math.abs(oCoordsA_o.y - oCoordsB_o.y);
+      return nDx_n + nDy_n;
    }
    static function getCaseCoordonnee(mapHandler, nNum)
    {
-      var _loc4_ = mapHandler.getWidth();
-      var _loc5_ = Math.floor(nNum / (_loc4_ * 2 - 1));
-      var _loc6_ = nNum - _loc5_ * (_loc4_ * 2 - 1);
-      var _loc7_ = _loc6_ % _loc4_;
-      var _loc8_ = {};
-      _loc8_.y = _loc5_ - _loc7_;
-      _loc8_.x = (nNum - (_loc4_ - 1) * _loc8_.y) / _loc4_;
-      return _loc8_;
+      var nWidth_n = mapHandler.getWidth();
+      var nRow_n = Math.floor(nNum / (nWidth_n * 2 - 1));
+      var nRemainder_n = nNum - nRow_n * (nWidth_n * 2 - 1);
+      var nCol_n = nRemainder_n % nWidth_n;
+      var oCoords_o = {};
+      oCoords_o.y = nRow_n - nCol_n;
+      oCoords_o.x = (nNum - (nWidth_n - 1) * oCoords_o.y) / nWidth_n;
+      return oCoords_o;
    }
    static function getTranslation1(nDir)
    {
@@ -257,31 +257,31 @@ class ank.battlefield.utils.Pathfinding
    }
    static function getDirection(mapHandler, nCell1, nCell2)
    {
-      var _loc5_ = mapHandler.getWidth();
-      var _loc6_ = [1,_loc5_,_loc5_ * 2 - 1,_loc5_ - 1,-1,- _loc5_,- _loc5_ * 2 + 1,- (_loc5_ - 1)];
-      var _loc7_ = nCell2 - nCell1;
-      var _loc8_ = 7;
-      while(_loc8_ >= 0)
+      var nW_n = mapHandler.getWidth();
+      var aOffsets_a = [1,nW_n,nW_n * 2 - 1,nW_n - 1,-1,- nW_n,- nW_n * 2 + 1,- (nW_n - 1)];
+      var nDiff_n = nCell2 - nCell1;
+      var nDir_n = 7;
+      while(nDir_n >= 0)
       {
-         if(_loc6_[_loc8_] == _loc7_)
+         if(aOffsets_a[nDir_n] == nDiff_n)
          {
-            return _loc8_;
+            return nDir_n;
          }
-         _loc8_ = _loc8_ - 1;
+         nDir_n = nDir_n - 1;
       }
-      var _loc9_ = ank.battlefield.utils.Pathfinding.getCaseCoordonnee(mapHandler,nCell1);
-      var _loc10_ = ank.battlefield.utils.Pathfinding.getCaseCoordonnee(mapHandler,nCell2);
-      var _loc11_ = _loc10_.x - _loc9_.x;
-      var _loc12_ = _loc10_.y - _loc9_.y;
-      if(_loc11_ == 0)
+      var oCoord1_o = ank.battlefield.utils.Pathfinding.getCaseCoordonnee(mapHandler,nCell1);
+      var oCoord2_o = ank.battlefield.utils.Pathfinding.getCaseCoordonnee(mapHandler,nCell2);
+      var nDx_n = oCoord2_o.x - oCoord1_o.x;
+      var nDy_n = oCoord2_o.y - oCoord1_o.y;
+      if(nDx_n == 0)
       {
-         if(_loc12_ > 0)
+         if(nDy_n > 0)
          {
             return 3;
          }
          return 7;
       }
-      if(_loc11_ > 0)
+      if(nDx_n > 0)
       {
          return 1;
       }
@@ -305,57 +305,57 @@ class ank.battlefield.utils.Pathfinding
    }
    static function getDirectionFromCoordinates(x1, y1, x2, y2, bAllDirections)
    {
-      var _loc7_ = Math.atan2(y2 - y1,x2 - x1);
+      var nAngle_n = Math.atan2(y2 - y1,x2 - x1);
       if(bAllDirections)
       {
-         if(_loc7_ >= (- Math.PI) / 8 && _loc7_ < Math.PI / 8)
+         if(nAngle_n >= (- Math.PI) / 8 && nAngle_n < Math.PI / 8)
          {
             return 0;
          }
-         if(_loc7_ >= Math.PI / 8 && _loc7_ < Math.PI / 3)
+         if(nAngle_n >= Math.PI / 8 && nAngle_n < Math.PI / 3)
          {
             return 1;
          }
-         if(_loc7_ >= Math.PI / 3 && _loc7_ < 2 * Math.PI / 3)
+         if(nAngle_n >= Math.PI / 3 && nAngle_n < 2 * Math.PI / 3)
          {
             return 2;
          }
-         if(_loc7_ >= 2 * Math.PI / 3 && _loc7_ < 7 * Math.PI / 8)
+         if(nAngle_n >= 2 * Math.PI / 3 && nAngle_n < 7 * Math.PI / 8)
          {
             return 3;
          }
-         if(_loc7_ >= 7 * Math.PI / 8 || _loc7_ < -7 * Math.PI / 8)
+         if(nAngle_n >= 7 * Math.PI / 8 || nAngle_n < -7 * Math.PI / 8)
          {
             return 4;
          }
-         if(_loc7_ >= -7 * Math.PI / 8 && _loc7_ < -2 * Math.PI / 3)
+         if(nAngle_n >= -7 * Math.PI / 8 && nAngle_n < -2 * Math.PI / 3)
          {
             return 5;
          }
-         if(_loc7_ >= -2 * Math.PI / 3 && _loc7_ < (- Math.PI) / 3)
+         if(nAngle_n >= -2 * Math.PI / 3 && nAngle_n < (- Math.PI) / 3)
          {
             return 6;
          }
-         if(_loc7_ >= (- Math.PI) / 3 && _loc7_ < (- Math.PI) / 8)
+         if(nAngle_n >= (- Math.PI) / 3 && nAngle_n < (- Math.PI) / 8)
          {
             return 7;
          }
       }
       else
       {
-         if(_loc7_ >= 0 && _loc7_ < Math.PI / 2)
+         if(nAngle_n >= 0 && nAngle_n < Math.PI / 2)
          {
             return 1;
          }
-         if(_loc7_ >= Math.PI / 2 && _loc7_ <= Math.PI)
+         if(nAngle_n >= Math.PI / 2 && nAngle_n <= Math.PI)
          {
             return 3;
          }
-         if(_loc7_ >= - Math.PI && _loc7_ < (- Math.PI) / 2)
+         if(nAngle_n >= - Math.PI && nAngle_n < (- Math.PI) / 2)
          {
             return 5;
          }
-         if(_loc7_ >= (- Math.PI) / 2 && _loc7_ < 0)
+         if(nAngle_n >= (- Math.PI) / 2 && nAngle_n < 0)
          {
             return 7;
          }
@@ -364,42 +364,42 @@ class ank.battlefield.utils.Pathfinding
    }
    static function getArroundCellNum(mapHandler, nCellNum, nDirectionModerator, nIndex)
    {
-      var _loc6_ = mapHandler.getWidth();
-      var _loc7_ = [1,_loc6_,_loc6_ * 2 - 1,_loc6_ - 1,-1,- _loc6_,- _loc6_ * 2 + 1,- (_loc6_ - 1)];
-      var _loc8_ = 0;
+      var nW_n = mapHandler.getWidth();
+      var aOffsets_a = [1,nW_n,nW_n * 2 - 1,nW_n - 1,-1,- nW_n,- nW_n * 2 + 1,- (nW_n - 1)];
+      var nResultDir_n = 0;
       switch(nIndex % 8)
       {
          case 0:
-            _loc8_ = 2;
+            nResultDir_n = 2;
             break;
          case 1:
-            _loc8_ = 6;
+            nResultDir_n = 6;
             break;
          case 2:
-            _loc8_ = 4;
+            nResultDir_n = 4;
             break;
          case 3:
-            _loc8_ = 0;
+            nResultDir_n = 0;
             break;
          case 4:
-            _loc8_ = 3;
+            nResultDir_n = 3;
             break;
          case 5:
-            _loc8_ = 5;
+            nResultDir_n = 5;
             break;
          case 6:
-            _loc8_ = 1;
+            nResultDir_n = 1;
             break;
          case 7:
-            _loc8_ = 7;
+            nResultDir_n = 7;
       }
-      _loc8_ = (_loc8_ + nDirectionModerator) % 8;
-      var _loc9_ = nCellNum + _loc7_[_loc8_];
-      var _loc10_ = mapHandler.getCellsData();
-      var _loc11_ = _loc10_[_loc9_];
-      if(_loc11_.active && (_loc10_[_loc9_] != undefined && Math.abs(_loc10_[_loc9_].x - _loc10_[nCellNum].x) <= 53))
+      nResultDir_n = (nResultDir_n + nDirectionModerator) % 8;
+      var nResultCell_n = nCellNum + aOffsets_a[nResultDir_n];
+      var aCellsData_a = mapHandler.getCellsData();
+      var oResultCell_o = aCellsData_a[nResultCell_n];
+      if(oResultCell_o.active && (aCellsData_a[nResultCell_n] != undefined && Math.abs(aCellsData_a[nResultCell_n].x - aCellsData_a[nCellNum].x) <= 53))
       {
-         return _loc9_;
+         return nResultCell_n;
       }
       return nCellNum;
    }
@@ -480,21 +480,21 @@ class ank.battlefield.utils.Pathfinding
    }
    static function checkView(mapHandler, cell1, cell2)
    {
-      var _loc5_ = mapHandler.getCellData(cell2);
-      if(!_loc5_.lineOfSight || !_loc5_.active)
+      var oTargetCell_o = mapHandler.getCellData(cell2);
+      if(!oTargetCell_o.lineOfSight || !oTargetCell_o.active)
       {
          return false;
       }
-      var _loc6_ = ank.battlefield.utils.Pathfinding.getCellsIdBetween(mapHandler,cell1,cell2);
-      var _loc7_ = 0;
-      while(_loc7_ < _loc6_.length - 1)
+      var aCellsBetween_a = ank.battlefield.utils.Pathfinding.getCellsIdBetween(mapHandler,cell1,cell2);
+      var nIdx_n = 0;
+      while(nIdx_n < aCellsBetween_a.length - 1)
       {
-         var _loc8_ = _loc6_[_loc7_];
-         if(!ank.battlefield.utils.Pathfinding.isCellFreeForLOS(mapHandler,_loc8_,cell1,cell2))
+         var nBetweenCell_n = aCellsBetween_a[nIdx_n];
+         if(!ank.battlefield.utils.Pathfinding.isCellFreeForLOS(mapHandler,nBetweenCell_n,cell1,cell2))
          {
             return false;
          }
-         _loc7_ = _loc7_ + 1;
+         nIdx_n = nIdx_n + 1;
       }
       return true;
    }
@@ -504,60 +504,60 @@ class ank.battlefield.utils.Pathfinding
       {
          return [];
       }
-      var _loc5_ = ank.battlefield.utils.Pathfinding.getCaseCoordonnee(mapHandler,from);
-      var _loc6_ = ank.battlefield.utils.Pathfinding.getCaseCoordonnee(mapHandler,to);
-      var _loc7_ = _loc5_.x;
-      var _loc8_ = _loc5_.y;
-      var _loc9_ = _loc6_.x;
-      var _loc10_ = _loc6_.y;
-      var _loc11_ = _loc9_ - _loc7_;
-      var _loc12_ = _loc10_ - _loc8_;
-      var _loc13_ = Math.sqrt(_loc11_ * _loc11_ + _loc12_ * _loc12_);
-      var _loc14_ = _loc11_ / _loc13_;
-      var _loc15_ = _loc12_ / _loc13_;
-      var _loc16_ = Math.abs(1 / _loc14_);
-      var _loc17_ = Math.abs(1 / _loc15_);
-      var _loc18_ = _loc14_ >= 0 ? 1 : -1;
-      var _loc19_ = _loc15_ >= 0 ? 1 : -1;
-      var _loc20_ = 0.5 * _loc16_;
-      var _loc21_ = 0.5 * _loc17_;
-      var _loc22_ = [];
-      while(_loc7_ != _loc9_ || _loc8_ != _loc10_)
+      var oFrom_o = ank.battlefield.utils.Pathfinding.getCaseCoordonnee(mapHandler,from);
+      var oTo_o = ank.battlefield.utils.Pathfinding.getCaseCoordonnee(mapHandler,to);
+      var nX1_n = oFrom_o.x;
+      var nY1_n = oFrom_o.y;
+      var nX2_n = oTo_o.x;
+      var nY2_n = oTo_o.y;
+      var nDx_n = nX2_n - nX1_n;
+      var nDy_n = nY2_n - nY1_n;
+      var nDist_n = Math.sqrt(nDx_n * nDx_n + nDy_n * nDy_n);
+      var nDirX_n = nDx_n / nDist_n;
+      var nDirY_n = nDy_n / nDist_n;
+      var nAbsX_n = Math.abs(1 / nDirX_n);
+      var nAbsY_n = Math.abs(1 / nDirY_n);
+      var nSignX_n = nDirX_n >= 0 ? 1 : -1;
+      var nSignY_n = nDirY_n >= 0 ? 1 : -1;
+      var nTx_n = 0.5 * nAbsX_n;
+      var nTy_n = 0.5 * nAbsY_n;
+      var aResult_a = [];
+      while(nX1_n != nX2_n || nY1_n != nY2_n)
       {
-         if(Math.abs(_loc20_ - _loc21_) < 1e-10)
+         if(Math.abs(nTx_n - nTy_n) < 1e-10)
          {
-            _loc20_ += _loc16_;
-            _loc21_ += _loc17_;
-            _loc7_ += _loc18_;
-            _loc8_ += _loc19_;
+            nTx_n += nAbsX_n;
+            nTy_n += nAbsY_n;
+            nX1_n += nSignX_n;
+            nY1_n += nSignY_n;
          }
-         else if(_loc20_ < _loc21_)
+         else if(nTx_n < nTy_n)
          {
-            _loc20_ += _loc16_;
-            _loc7_ += _loc18_;
+            nTx_n += nAbsX_n;
+            nX1_n += nSignX_n;
          }
          else
          {
-            _loc21_ += _loc17_;
-            _loc8_ += _loc19_;
+            nTy_n += nAbsY_n;
+            nY1_n += nSignY_n;
          }
-         var _loc23_ = ank.battlefield.utils.Pathfinding.getCaseNum(mapHandler,_loc7_,_loc8_);
-         _loc22_.push(_loc23_);
+         var nCell_n = ank.battlefield.utils.Pathfinding.getCaseNum(mapHandler,nX1_n,nY1_n);
+         aResult_a.push(nCell_n);
       }
-      return _loc22_;
+      return aResult_a;
    }
    static function isCellFreeForLOS(mapHandler, cellNum)
    {
-      var _loc4_ = mapHandler.getCellData(cellNum);
-      if(!_loc4_.lineOfSight || !_loc4_.active)
+      var oCell_o = mapHandler.getCellData(cellNum);
+      if(!oCell_o.lineOfSight || !oCell_o.active)
       {
          return false;
       }
-      var _loc5_ = _loc4_.spriteOnID;
-      var _loc6_ = _global.API;
-      var _loc7_ = _loc5_ == undefined ? undefined : _loc6_.gfx.spriteHandler.getSprite(_loc5_);
-      var _loc8_ = _loc7_ != undefined && !_loc7_.isInvisibleInFight;
-      if(_loc8_)
+      var nSpriteId_n = oCell_o.spriteOnID;
+      var oApi_o = _global.API;
+      var oSprite_o = nSpriteId_n == undefined ? undefined : oApi_o.gfx.spriteHandler.getSprite(nSpriteId_n);
+      var bSpriteVisible_b = oSprite_o != undefined && !oSprite_o.isInvisibleInFight;
+      if(bSpriteVisible_b)
       {
          return false;
       }
@@ -565,18 +565,18 @@ class ank.battlefield.utils.Pathfinding
    }
    static function getCaseNum(mapHandler, x, y)
    {
-      var _loc5_ = mapHandler.getWidth();
-      return x * _loc5_ + y * (_loc5_ - 1);
+      var nWidth_n = mapHandler.getWidth();
+      return x * nWidth_n + y * (nWidth_n - 1);
    }
    static function checkAlign(mapHandler, cell1, cell2)
    {
-      var _loc5_ = ank.battlefield.utils.Pathfinding.getCaseCoordonnee(mapHandler,cell1);
-      var _loc6_ = ank.battlefield.utils.Pathfinding.getCaseCoordonnee(mapHandler,cell2);
-      if(_loc5_.x == _loc6_.x)
+      var oCoords1_o = ank.battlefield.utils.Pathfinding.getCaseCoordonnee(mapHandler,cell1);
+      var oCoords2_o = ank.battlefield.utils.Pathfinding.getCaseCoordonnee(mapHandler,cell2);
+      if(oCoords1_o.x == oCoords2_o.x)
       {
          return true;
       }
-      if(_loc5_.y == _loc6_.y)
+      if(oCoords1_o.y == oCoords2_o.y)
       {
          return true;
       }

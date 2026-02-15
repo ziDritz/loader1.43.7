@@ -28,35 +28,35 @@ class ank.battlefield.datacenter.Cell extends Object
    }
    function get isTrigger()
    {
-      var _loc2_ = false;
-      var _loc3_ = 0;
-      while(_loc3_ < dofus.Constants.MAP_TRIGGER_LAYEROBJECTS.length)
+      var bIsTrigger_b = false;
+      var nIdx_n = 0;
+      while(nIdx_n < dofus.Constants.MAP_TRIGGER_LAYEROBJECTS.length)
       {
-         var _loc4_ = dofus.Constants.MAP_TRIGGER_LAYEROBJECTS[_loc3_];
-         if(this.layerObject1Num == _loc4_ || this.layerObject2Num == _loc4_)
+         var nTriggerId_n = dofus.Constants.MAP_TRIGGER_LAYEROBJECTS[nIdx_n];
+         if(this.layerObject1Num == nTriggerId_n || this.layerObject2Num == nTriggerId_n)
          {
-            _loc2_ = true;
+            bIsTrigger_b = true;
             break;
          }
-         _loc3_ = _loc3_ + 1;
+         nIdx_n = nIdx_n + 1;
       }
-      return _loc2_;
+      return bIsTrigger_b;
    }
    function get isUnwalkableLayerObject()
    {
-      var _loc2_ = false;
-      var _loc3_ = 0;
-      while(_loc3_ < dofus.Constants.MAP_UNWALKABLE_LAYEROBJECTS.length)
+      var bUnwalkable_b = false;
+      var nIdx_n = 0;
+      while(nIdx_n < dofus.Constants.MAP_UNWALKABLE_LAYEROBJECTS.length)
       {
-         var _loc4_ = dofus.Constants.MAP_UNWALKABLE_LAYEROBJECTS[_loc3_];
-         if(this.layerObject1Num == _loc4_ || this.layerObject2Num == _loc4_)
+         var nUnwalkableId_n = dofus.Constants.MAP_UNWALKABLE_LAYEROBJECTS[nIdx_n];
+         if(this.layerObject1Num == nUnwalkableId_n || this.layerObject2Num == nUnwalkableId_n)
          {
-            _loc2_ = true;
+            bUnwalkable_b = true;
             break;
          }
-         _loc3_ = _loc3_ + 1;
+         nIdx_n = nIdx_n + 1;
       }
-      return _loc2_;
+      return bUnwalkable_b;
    }
    function get isTargetable()
    {
@@ -64,29 +64,29 @@ class ank.battlefield.datacenter.Cell extends Object
    }
    function isTactic(map)
    {
-      var _loc3_ = false;
+      var bTactic_b = false;
       if(this.layerGroundNum == 0 && (this.groundSlope == 1 && (this.layerObject2Num == 0 || (this.layerObject2Num == dofus.Constants.getTacticLayerObject2(map.subarea) || (this.layerObject2Num == 25 || this.layerObject2Num == 1030)))))
       {
          if(!this.lineOfSight)
          {
             if(this.layerObject1Num == dofus.Constants.getTacticGfx(map.subarea,0))
             {
-               _loc3_ = true;
+               bTactic_b = true;
             }
          }
          else if(this.movement == 0 || this.movement == 1)
          {
             if(this.layerObject1Num == 10002)
             {
-               _loc3_ = true;
+               bTactic_b = true;
             }
          }
          else if(this.layerObject1Num == dofus.Constants.getTacticGfx(map.subarea,1) || this.layerObject1Num == dofus.Constants.getTacticGfx(map.subarea,3))
          {
-            _loc3_ = true;
+            bTactic_b = true;
          }
       }
-      return _loc3_;
+      return bTactic_b;
    }
    function addSpriteOnID(sID)
    {
@@ -103,14 +103,14 @@ class ank.battlefield.datacenter.Cell extends Object
          return undefined;
       }
       this.allSpritesOn[sID] = true;
-      var _loc3_ = _global.API;
-      var _loc4_ = _loc3_.datacenter.Basics.interactionsManager_path;
-      if(_loc4_ != undefined)
+      var api_o = _global.API;
+      var aPath_o = api_o.datacenter.Basics.interactionsManager_path;
+      if(aPath_o != undefined)
       {
-         var _loc5_ = _loc3_.gfx.mapHandler.getCellData(_loc4_[_loc4_.length - 1].num);
-         if(_loc5_ != undefined && _loc5_.mc.onRollOver)
+         var oLastCell_o = api_o.gfx.mapHandler.getCellData(aPath_o[aPath_o.length - 1].num);
+         if(oLastCell_o != undefined && oLastCell_o.mc.onRollOver)
          {
-            _loc5_.mc.onRollOver();
+            oLastCell_o.mc.onRollOver();
          }
       }
    }
@@ -130,12 +130,12 @@ class ank.battlefield.datacenter.Cell extends Object
    }
    function get spriteOnCount()
    {
-      var _loc2_ = 0;
-      for(var k in this.allSpritesOn)
+      var nCount_n = 0;
+      for(var sID_s in this.allSpritesOn)
       {
-         _loc2_ = _loc2_ + 1;
+         nCount_n = nCount_n + 1;
       }
-      return _loc2_;
+      return nCount_n;
    }
    function get spriteOnID()
    {
@@ -143,11 +143,11 @@ class ank.battlefield.datacenter.Cell extends Object
       {
          return undefined;
       }
-      for(var k in this.allSpritesOn)
+      for(var sID_s in this.allSpritesOn)
       {
-         if(this.allSpritesOn[k])
+         if(this.allSpritesOn[sID_s])
          {
-            return String(k);
+            return String(sID_s);
          }
       }
       return undefined;
@@ -158,9 +158,9 @@ class ank.battlefield.datacenter.Cell extends Object
       {
          return false;
       }
-      for(var k in this.allSpritesOn)
+      for(var sID_s in this.allSpritesOn)
       {
-         if(this.allSpritesOn[k].hasCarriedChild())
+         if(this.allSpritesOn[sID_s].hasCarriedChild())
          {
             return true;
          }
@@ -169,7 +169,7 @@ class ank.battlefield.datacenter.Cell extends Object
    }
    function turnTactic(mapHandler, map)
    {
-      var _loc4_ = this.isTrigger;
+      var bWasTrigger_b = this.isTrigger;
       if(this.nPermanentLevel == 0)
       {
          this.nPermanentLevel = 1;
@@ -187,9 +187,9 @@ class ank.battlefield.datacenter.Cell extends Object
       }
       else
       {
-         var _loc5_ = ank.battlefield.utils.Pathfinding.getCaseCoordonnee(mapHandler,this.num);
-         var _loc6_ = Math.abs(_loc5_.x) % 2 == Math.abs(_loc5_.y) % 2;
-         this.layerObject1Num = !_loc6_ ? dofus.Constants.getTacticGfx(map.subarea,3) : dofus.Constants.getTacticGfx(map.subarea,1);
+         var oCoord_o = ank.battlefield.utils.Pathfinding.getCaseCoordonnee(mapHandler,this.num);
+         var bParity_b = Math.abs(oCoord_o.x) % 2 == Math.abs(oCoord_o.y) % 2;
+         this.layerObject1Num = !bParity_b ? dofus.Constants.getTacticGfx(map.subarea,3) : dofus.Constants.getTacticGfx(map.subarea,1);
       }
       if(this.layerObject2Num != 25)
       {
@@ -197,7 +197,7 @@ class ank.battlefield.datacenter.Cell extends Object
          {
             this.layerObject2Num = dofus.Constants.getTacticLayerObject2(map.subarea);
          }
-         else if(_loc4_)
+         else if(bWasTrigger_b)
          {
             this.layerObject2Num = 1030;
          }

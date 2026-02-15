@@ -4,36 +4,38 @@ class ank.battlefield.utils.Compressor extends ank.utils.Compressor
    {
       super();
    }
+
+   // There is no map decompression, only cells are uncompressed
    static function uncompressMap(mapID, name, width, height, backgroundNum, sData, oMap, bForced)
    {
       if(oMap == undefined)
       {
          return undefined;
       }
-      var _loc10_ = [];
-      var _loc11_ = [];
-      var _loc12_ = sData.length;
-      var _loc14_ = 0;
-      var _loc15_ = 0;
-      while(_loc15_ < _loc12_)
+      var aCells_o = [];
+      var aValidCells_o = [];
+      var nDataLen_n = sData.length;
+      var nCellIndex_n = 0;
+      var nCharIndex_n = 0;
+      while(nCharIndex_n < nDataLen_n)
       {
-         var _loc13_ = ank.battlefield.utils.Compressor.uncompressCell(sData.substring(_loc15_,_loc15_ + 10),bForced,0);
-         _loc13_.num = _loc14_;
-         _loc10_.push(_loc13_);
-         _loc14_ = _loc14_ + 1;
-         if(_loc13_.isTargetable)
+         var oCell_o = ank.battlefield.utils.Compressor.uncompressCell(sData.substring(nCharIndex_n,nCharIndex_n + 10),bForced,0);
+         oCell_o.num = nCellIndex_n;
+         aCells_o.push(oCell_o);
+         nCellIndex_n = nCellIndex_n + 1;
+         if(oCell_o.isTargetable)
          {
-            _loc11_.push(_loc13_);
+            aValidCells_o.push(oCell_o);
          }
-         _loc15_ += 10;
+         nCharIndex_n += 10;
       }
       oMap.id = Number(mapID);
       oMap.name = name;
       oMap.width = Number(width);
       oMap.height = Number(height);
       oMap.backgroundNum = backgroundNum;
-      oMap.data = _loc10_;
-      oMap.validCells = _loc11_;
+      oMap.data = aCells_o;
+      oMap.validCells = aValidCells_o;
    }
    static function uncompressCell(sData, bForced, nPermanentLevel)
    {
@@ -86,69 +88,69 @@ class ank.battlefield.utils.Compressor extends ank.utils.Compressor
       {
          return undefined;
       }
-      var _loc3_ = [];
-      var _loc4_ = oMap.data;
-      var _loc5_ = _loc4_.length;
-      var _loc6_ = 0;
-      while(_loc6_ < _loc5_)
+      var aCompressedCells_s = [];
+      var aCells_o = oMap.data;
+      var nCellCount_n = aCells_o.length;
+      var nIndex_n = 0;
+      while(nIndex_n < nCellCount_n)
       {
-         _loc3_.push(ank.battlefield.utils.Compressor.compressCell(_loc4_[_loc6_]));
-         _loc6_ = _loc6_ + 1;
+         aCompressedCells_s.push(ank.battlefield.utils.Compressor.compressCell(aCells_o[nIndex_n]));
+         nIndex_n = nIndex_n + 1;
       }
-      return _loc3_.join("");
+      return aCompressedCells_s.join("");
    }
    static function compressCell(oCell)
    {
-      var _loc4_ = [0,0,0,0,0,0,0,0,0,0];
-      _loc4_[0] = (!oCell.active ? 0 : 1) << 5;
-      _loc4_[0] |= !oCell.lineOfSight ? 0 : 1;
-      _loc4_[0] |= (oCell.layerGroundNum & 0x0600) >> 6;
-      _loc4_[0] |= (oCell.layerObject1Num & 0x2000) >> 11;
-      _loc4_[0] |= (oCell.layerObject2Num & 0x2000) >> 12;
-      _loc4_[1] = (oCell.layerGroundRot & 3) << 4;
-      _loc4_[1] |= oCell.groundLevel & 0x0F;
-      _loc4_[2] = (oCell.movement & 7) << 3;
-      _loc4_[2] |= oCell.layerGroundNum >> 6 & 7;
-      _loc4_[3] = oCell.layerGroundNum & 0x3F;
-      _loc4_[4] = (oCell.groundSlope & 0x0F) << 2;
-      _loc4_[4] |= (!oCell.layerGroundFlip ? 0 : 1) << 1;
-      _loc4_[4] |= oCell.layerObject1Num >> 12 & 1;
-      _loc4_[5] = oCell.layerObject1Num >> 6 & 0x3F;
-      _loc4_[6] = oCell.layerObject1Num & 0x3F;
-      _loc4_[7] = (oCell.layerObject1Rot & 3) << 4;
-      _loc4_[7] |= (!oCell.layerObject1Flip ? 0 : 1) << 3;
-      _loc4_[7] |= (!oCell.layerObject2Flip ? 0 : 1) << 2;
-      _loc4_[7] |= (!oCell.layerObject2Interactive ? 0 : 1) << 1;
-      _loc4_[7] |= oCell.layerObject2Num >> 12 & 1;
-      _loc4_[8] = oCell.layerObject2Num >> 6 & 0x3F;
-      _loc4_[9] = oCell.layerObject2Num & 0x3F;
-      var _loc5_ = _loc4_.length - 1;
-      while(_loc5_ >= 0)
+      var aValues_n = [0,0,0,0,0,0,0,0,0,0];
+      aValues_n[0] = (!oCell.active ? 0 : 1) << 5;
+      aValues_n[0] |= !oCell.lineOfSight ? 0 : 1;
+      aValues_n[0] |= (oCell.layerGroundNum & 0x0600) >> 6;
+      aValues_n[0] |= (oCell.layerObject1Num & 0x2000) >> 11;
+      aValues_n[0] |= (oCell.layerObject2Num & 0x2000) >> 12;
+      aValues_n[1] = (oCell.layerGroundRot & 3) << 4;
+      aValues_n[1] |= oCell.groundLevel & 0x0F;
+      aValues_n[2] = (oCell.movement & 7) << 3;
+      aValues_n[2] |= oCell.layerGroundNum >> 6 & 7;
+      aValues_n[3] = oCell.layerGroundNum & 0x3F;
+      aValues_n[4] = (oCell.groundSlope & 0x0F) << 2;
+      aValues_n[4] |= (!oCell.layerGroundFlip ? 0 : 1) << 1;
+      aValues_n[4] |= oCell.layerObject1Num >> 12 & 1;
+      aValues_n[5] = oCell.layerObject1Num >> 6 & 0x3F;
+      aValues_n[6] = oCell.layerObject1Num & 0x3F;
+      aValues_n[7] = (oCell.layerObject1Rot & 3) << 4;
+      aValues_n[7] |= (!oCell.layerObject1Flip ? 0 : 1) << 3;
+      aValues_n[7] |= (!oCell.layerObject2Flip ? 0 : 1) << 2;
+      aValues_n[7] |= (!oCell.layerObject2Interactive ? 0 : 1) << 1;
+      aValues_n[7] |= oCell.layerObject2Num >> 12 & 1;
+      aValues_n[8] = oCell.layerObject2Num >> 6 & 0x3F;
+      aValues_n[9] = oCell.layerObject2Num & 0x3F;
+      var nIdx_n = aValues_n.length - 1;
+      while(nIdx_n >= 0)
       {
-         _loc4_[_loc5_] = ank.utils.Compressor.encode64(_loc4_[_loc5_]);
-         _loc5_ = _loc5_ - 1;
+         aValues_n[nIdx_n] = ank.utils.Compressor.encode64(aValues_n[nIdx_n]);
+         nIdx_n = nIdx_n - 1;
       }
-      var _loc3_ = _loc4_.join("");
-      return _loc3_;
+      var sEncoded_s = aValues_n.join("");
+      return sEncoded_s;
    }
    static function compressPath(aFullPathData, bWithFirst)
    {
-      var _loc4_ = new String();
-      var _loc5_ = ank.battlefield.utils.Compressor.makeLightPath(aFullPathData,bWithFirst);
-      var _loc11_ = _loc5_.length;
-      var _loc6_ = 0;
-      while(_loc6_ < _loc11_)
+      var sCompressed_s = new String();
+      var aLightPath_o = ank.battlefield.utils.Compressor.makeLightPath(aFullPathData,bWithFirst);
+      var nLen_n = aLightPath_o.length;
+      var nIndex_n = 0;
+      while(nIndex_n < nLen_n)
       {
-         var _loc7_ = _loc5_[_loc6_];
-         var _loc8_ = _loc7_.dir & 7;
-         var _loc9_ = (_loc7_.num & 0x0FC0) >> 6;
-         var _loc10_ = _loc7_.num & 0x3F;
-         _loc4_ += ank.utils.Compressor.encode64(_loc8_);
-         _loc4_ += ank.utils.Compressor.encode64(_loc9_);
-         _loc4_ += ank.utils.Compressor.encode64(_loc10_);
-         _loc6_ = _loc6_ + 1;
+         var oStep_o = aLightPath_o[nIndex_n];
+         var nDir_n = oStep_o.dir & 7;
+         var nHigh_n = (oStep_o.num & 0x0FC0) >> 6;
+         var nLow_n = oStep_o.num & 0x3F;
+         sCompressed_s += ank.utils.Compressor.encode64(nDir_n);
+         sCompressed_s += ank.utils.Compressor.encode64(nHigh_n);
+         sCompressed_s += ank.utils.Compressor.encode64(nLow_n);
+         nIndex_n = nIndex_n + 1;
       }
-      return _loc4_;
+      return sCompressed_s;
    }
    static function makeLightPath(aFullPath, bWithFirst)
    {
@@ -157,78 +159,79 @@ class ank.battlefield.utils.Compressor extends ank.utils.Compressor
          ank.utils.Logger.err("Le chemin est vide");
          return [];
       }
-      var _loc4_ = [];
+      var aLightPath_o = [];
       if(bWithFirst)
       {
-         _loc4_.push(aFullPath[0]);
+         aLightPath_o.push(aFullPath[0]);
       }
-      var _loc6_ = aFullPath.length - 1;
-      while(_loc6_ >= 0)
+      var nI_n = aFullPath.length - 1;
+      var nPrevDir_n = undefined;
+      while(nI_n >= 0)
       {
-         if(aFullPath[_loc6_].dir != _loc5_)
+         if(aFullPath[nI_n].dir != nPrevDir_n)
          {
-            _loc4_.splice(0,0,aFullPath[_loc6_]);
-            var _loc5_ = aFullPath[_loc6_].dir;
+            aLightPath_o.splice(0,0,aFullPath[nI_n]);
+            nPrevDir_n = aFullPath[nI_n].dir;
          }
-         _loc6_ = _loc6_ - 1;
+         nI_n = nI_n - 1;
       }
-      return _loc4_;
+      return aLightPath_o;
    }
    static function extractFullPath(mapHandler, compressedData)
    {
-      var _loc4_ = [];
-      var _loc5_ = compressedData.split("");
-      var _loc7_ = compressedData.length;
-      var _loc8_ = mapHandler.getCellCount();
-      var _loc6_ = 0;
-      while(_loc6_ < _loc7_)
+      var aLightPath_o = [];
+      var aChars_a = compressedData.split("");
+      var nLen_n = compressedData.length;
+      var nCellCount_n = mapHandler.getCellCount();
+      var nIndex_n = 0;
+      while(nIndex_n < nLen_n)
       {
-         _loc5_[_loc6_] = ank.utils.Compressor.decode64(_loc5_[_loc6_]);
-         _loc5_[_loc6_ + 1] = ank.utils.Compressor.decode64(_loc5_[_loc6_ + 1]);
-         _loc5_[_loc6_ + 2] = ank.utils.Compressor.decode64(_loc5_[_loc6_ + 2]);
-         var _loc9_ = (_loc5_[_loc6_ + 1] & 0x0F) << 6 | _loc5_[_loc6_ + 2];
-         if(_loc9_ < 0)
+         aChars_a[nIndex_n] = ank.utils.Compressor.decode64(aChars_a[nIndex_n]);
+         aChars_a[nIndex_n + 1] = ank.utils.Compressor.decode64(aChars_a[nIndex_n + 1]);
+         aChars_a[nIndex_n + 2] = ank.utils.Compressor.decode64(aChars_a[nIndex_n + 2]);
+         var nCellNum_n = (aChars_a[nIndex_n + 1] & 0x0F) << 6 | aChars_a[nIndex_n + 2];
+         if(nCellNum_n < 0)
          {
             ank.utils.Logger.err("Case pas sur carte");
             return null;
          }
-         if(_loc9_ > _loc8_)
+         if(nCellNum_n > nCellCount_n)
          {
             ank.utils.Logger.err("Case pas sur carte");
             return null;
          }
-         _loc4_.push({num:_loc9_,dir:_loc5_[_loc6_]});
-         _loc6_ += 3;
+         aLightPath_o.push({num:nCellNum_n,dir:aChars_a[nIndex_n]});
+         nIndex_n += 3;
       }
-      return ank.battlefield.utils.Compressor.makeFullPath(mapHandler,_loc4_);
+      return ank.battlefield.utils.Compressor.makeFullPath(mapHandler,aLightPath_o);
    }
    static function makeFullPath(mapHandler, aLightPath)
    {
-      var _loc4_ = [];
-      var _loc6_ = 0;
-      var _loc7_ = mapHandler.getWidth();
-      var _loc8_ = [1,_loc7_,_loc7_ * 2 - 1,_loc7_ - 1,-1,- _loc7_,- _loc7_ * 2 + 1,- (_loc7_ - 1)];
-      var _loc5_ = aLightPath[0].num;
-      _loc4_[_loc6_] = _loc5_;
-      var _loc9_ = 1;
-      while(_loc9_ < aLightPath.length)
+      var aFullPath_o = [];
+      var nIndex_n = 0;
+      var nMapWidth_n = mapHandler.getWidth();
+      var aDirOffsets_n = [1,nMapWidth_n,nMapWidth_n * 2 - 1,nMapWidth_n - 1,-1,- nMapWidth_n,- nMapWidth_n * 2 + 1,- (nMapWidth_n - 1)];
+      var nCurrentNum_n = aLightPath[0].num;
+      aFullPath_o[nIndex_n] = nCurrentNum_n;
+      var nLightIndex_n = 1;
+      while(nLightIndex_n < aLightPath.length)
       {
-         var _loc10_ = aLightPath[_loc9_].num;
-         var _loc11_ = aLightPath[_loc9_].dir;
-         var _loc12_ = 2 * _loc7_ + 1;
-         while(_loc4_[_loc6_] != _loc10_)
+         var nTargetNum_n = aLightPath[nLightIndex_n].num;
+         var nDir_n = aLightPath[nLightIndex_n].dir;
+         var nSafety_n = 2 * nMapWidth_n + 1;
+         while(aFullPath_o[nIndex_n] != nTargetNum_n)
          {
-            _loc5_ += _loc8_[_loc11_];
-            _loc4_[_loc6_ = _loc6_ + 1] = _loc5_;
-            if((_loc12_ = _loc12_ - 1) < 0)
+            nCurrentNum_n += aDirOffsets_n[nDir_n];
+            aFullPath_o[nIndex_n = nIndex_n + 1] = nCurrentNum_n;
+            if((nSafety_n = nSafety_n - 1) < 0)
             {
                ank.utils.Logger.err("Chemin impossible");
                return null;
             }
          }
-         _loc5_ = _loc10_;
-         _loc9_ = _loc9_ + 1;
+         nCurrentNum_n = nTargetNum_n;
+         nLightIndex_n = nLightIndex_n + 1;
       }
-      return _loc4_;
+      return aFullPath_o;
    }
 }

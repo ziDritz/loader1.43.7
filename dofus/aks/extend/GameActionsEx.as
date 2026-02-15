@@ -9,14 +9,14 @@ class dofus.aks.extend.GameActionsEx
    }
    function onActionEx(sExtraData, nActionType, sSenderID, oSeq, sParams, oContext)
    {
-      var _loc8_ = true;
+      var bCanContinue = true;
       switch(nActionType)
       {
          case 1:
-            var _loc9_ = this.api.datacenter.Sprites.getItemAt(sSenderID);
+            var oSpriteActing = this.api.datacenter.Sprites.getItemAt(sSenderID);
             if(!this.api.gfx.isMapBuild)
             {
-               _loc8_ = false;
+               bCanContinue = false;
                break;
             }
             if(dofus.Constants.USE_JS_LOG && (_global.CONFIG.isNewAccount && !this.api.datacenter.Basics.first_movement))
@@ -28,21 +28,21 @@ class dofus.aks.extend.GameActionsEx
             {
                oSeq.addAction(35,false,this.api.gfx,this.api.gfx.setInteraction,[ank.battlefield.Constants.INTERACTION_CELL_NONE]);
             }
-            var _loc10_ = ank.battlefield.utils.Compressor.extractFullPath(this.api.gfx.mapHandler,sParams);
-            if(_loc9_.hasCarriedParent() && !_loc9_.uncarryingSprite)
+            var aFullPath = ank.battlefield.utils.Compressor.extractFullPath(this.api.gfx.mapHandler,sParams);
+            if(oSpriteActing.hasCarriedParent() && !oSpriteActing.uncarryingSprite)
             {
-               _loc9_.uncarryingSprite = true;
-               _loc10_.shift();
-               oSeq.addAction(174,false,this.api.gfx,this.api.gfx.uncarriedSprite,[sSenderID,_loc10_[0],true,oSeq]);
-               oSeq.addAction(36,false,this.api.gfx,this.api.gfx.addSpriteExtraClip,[sSenderID,dofus.Constants.CIRCLE_FILE,dofus.Constants.TEAMS_COLOR[_loc9_.Team]]);
+               oSpriteActing.uncarryingSprite = true;
+               aFullPath.shift();
+               oSeq.addAction(174,false,this.api.gfx,this.api.gfx.uncarriedSprite,[sSenderID,aFullPath[0],true,oSeq]);
+               oSeq.addAction(36,false,this.api.gfx,this.api.gfx.addSpriteExtraClip,[sSenderID,dofus.Constants.CIRCLE_FILE,dofus.Constants.TEAMS_COLOR[oSpriteActing.Team]]);
             }
-            var _loc11_ = _loc9_.forceRun;
-            var _loc12_ = _loc9_.forceWalk;
-            var _loc13_ = !this.api.datacenter.Game.isFight ? (!(_loc9_ instanceof dofus.datacenter.Character) ? 6 : 3) : 3;
+            var bForceRun = oSpriteActing.forceRun;
+            var bForceWalk = oSpriteActing.forceWalk;
+            var nPathSpeed = !this.api.datacenter.Game.isFight ? (!(oSpriteActing instanceof dofus.datacenter.Character) ? 6 : 3) : 3;
             if(this.api.datacenter.Game.isRunning)
             {
                oSeq.addAction(37,false,this.api.gfx,this.api.gfx.unSelect,[true]);
-               oSeq.addAction(175,false,this.api.gfx,this.api.gfx.moveSpriteWithUncompressedPath,[sSenderID,_loc10_,oSeq,false,_loc11_,_loc12_,_loc13_]);
+               oSeq.addAction(175,false,this.api.gfx,this.api.gfx.moveSpriteWithUncompressedPath,[sSenderID,aFullPath,oSeq,false,bForceRun,bForceWalk,nPathSpeed]);
             }
             else
             {
@@ -54,7 +54,7 @@ class dofus.aks.extend.GameActionsEx
                   }
                   this.api.datacenter.Game.nTransmittingStates &= dofus.datacenter.Game.STATE_MOVE_BIT ^ -1;
                }
-               this.api.gfx.moveSpriteWithUncompressedPath(sSenderID,_loc10_,oSeq,true,_loc11_,_loc12_,_loc13_);
+               this.api.gfx.moveSpriteWithUncompressedPath(sSenderID,aFullPath,oSeq,true,bForceRun,bForceWalk,nPathSpeed);
             }
             break;
          case 2:
@@ -82,25 +82,25 @@ class dofus.aks.extend.GameActionsEx
             }
             break;
          case 4:
-            var _loc14_ = sParams.split(",");
-            var _loc15_ = _loc14_[0];
-            var _loc16_ = Number(_loc14_[1]);
-            var _loc17_ = this.api.datacenter.Sprites.getItemAt(_loc15_);
-            var _loc18_ = _loc17_.mc;
-            oSeq.addAction(42,false,_loc18_,_loc18_.setPosition,[_loc16_]);
+            var aParams = sParams.split(",");
+            var sSpriteID = aParams[0];
+            var nCellID = Number(aParams[1]);
+            var oSprite = this.api.datacenter.Sprites.getItemAt(sSpriteID);
+            var mcSprite = oSprite.mc;
+            oSeq.addAction(42,false,mcSprite,mcSprite.setPosition,[nCellID]);
             break;
          case 5:
-            var _loc19_ = sParams.split(",");
-            var _loc20_ = _loc19_[0];
-            var _loc21_ = Number(_loc19_[1]);
-            this.api.gfx.slideSprite(_loc20_,_loc21_,oSeq);
+            var aParams = sParams.split(",");
+            var sSpriteID = aParams[0];
+            var nCellID = Number(aParams[1]);
+            this.api.gfx.slideSprite(sSpriteID,nCellID,oSeq);
             break;
          case 501:
-            var _loc22_ = sParams.split(",");
-            var _loc23_ = _loc22_[0];
-            var _loc24_ = Number(_loc22_[1]);
-            var _loc25_ = this.api.datacenter.Sprites.getItemAt(sSenderID);
-            var _loc26_ = _loc22_[2] != undefined ? "anim" + _loc22_[2] : _loc25_.ToolAnimation;
+            var aParams = sParams.split(",");
+            var nToolID = aParams[0];
+            var nDuration = Number(aParams[1]);
+            var oSprite = this.api.datacenter.Sprites.getItemAt(sSenderID);
+            var sAnimName = aParams[2] != undefined ? "anim" + aParams[2] : oSprite.ToolAnimation;
             if(sSenderID == this.api.datacenter.Player.ID)
             {
                if((this.api.datacenter.Game.nTransmittingStates & dofus.datacenter.Game.STATE_GATHER_BIT) == dofus.datacenter.Game.STATE_NONE)
@@ -109,56 +109,56 @@ class dofus.aks.extend.GameActionsEx
                }
                this.api.datacenter.Game.nTransmittingStates &= dofus.datacenter.Game.STATE_GATHER_BIT ^ -1;
             }
-            oSeq.addAction(111,false,this.api.gfx,this.api.gfx.autoCalculateSpriteDirection,[sSenderID,_loc23_]);
-            oSeq.addAction(112,sSenderID == this.api.datacenter.Player.ID,this.api.gfx,this.api.gfx.setSpriteLoopAnim,[sSenderID,_loc26_,_loc24_],_loc24_,true);
+            oSeq.addAction(111,false,this.api.gfx,this.api.gfx.autoCalculateSpriteDirection,[sSenderID,nToolID]);
+            oSeq.addAction(112,sSenderID == this.api.datacenter.Player.ID,this.api.gfx,this.api.gfx.setSpriteLoopAnim,[sSenderID,sAnimName,nDuration],nDuration,true);
             break;
          case 617:
             oContext.bSequence = false;
-            var _loc27_ = sParams.split(",");
-            var _loc28_ = this.api.datacenter.Sprites.getItemAt(Number(_loc27_[0]));
-            var _loc29_ = this.api.datacenter.Sprites.getItemAt(Number(_loc27_[1]));
-            var _loc30_ = _loc27_[2];
-            this.api.gfx.addSpriteBubble(_loc30_,this.api.lang.getText("A_ASK_MARRIAGE_B",[_loc28_.name,_loc29_.name]));
-            if(_loc28_.id == this.api.datacenter.Player.ID)
+            var aParams = sParams.split(",");
+            var oSpriteAsker = this.api.datacenter.Sprites.getItemAt(Number(aParams[0]));
+            var oSpriteTarget = this.api.datacenter.Sprites.getItemAt(Number(aParams[1]));
+            var sCellID = aParams[2];
+            this.api.gfx.addSpriteBubble(sCellID,this.api.lang.getText("A_ASK_MARRIAGE_B",[oSpriteAsker.name,oSpriteTarget.name]));
+            if(oSpriteAsker.id == this.api.datacenter.Player.ID)
             {
-               this.api.kernel.showMessage(this.api.lang.getText("MARRIAGE"),this.api.lang.getText("A_ASK_MARRIAGE_B",[_loc28_.name,_loc29_.name]),"CAUTION_YESNO",{name:"Marriage",listener:this._parent,params:{spriteID:_loc28_.id,refID:sSenderID}});
+               this.api.kernel.showMessage(this.api.lang.getText("MARRIAGE"),this.api.lang.getText("A_ASK_MARRIAGE_B",[oSpriteAsker.name,oSpriteTarget.name]),"CAUTION_YESNO",{name:"Marriage",listener:this._parent,params:{spriteID:oSpriteAsker.id,refID:sSenderID}});
             }
             break;
          case 618:
          case 619:
             oContext.bSequence = false;
-            var _loc31_ = sParams.split(",");
-            var _loc32_ = this.api.datacenter.Sprites.getItemAt(Number(_loc31_[0]));
-            var _loc33_ = this.api.datacenter.Sprites.getItemAt(Number(_loc31_[1]));
-            var _loc34_ = _loc31_[2];
-            var _loc35_ = nActionType != 618 ? "A_NOT_MARRIED_B" : "A_MARRIED_B";
-            this.api.gfx.addSpriteBubble(_loc34_,this.api.lang.getText(_loc35_,[_loc32_.name,_loc33_.name]));
+            var aParams = sParams.split(",");
+            var oSpriteA = this.api.datacenter.Sprites.getItemAt(Number(aParams[0]));
+            var oSpriteB = this.api.datacenter.Sprites.getItemAt(Number(aParams[1]));
+            var sCellID = aParams[2];
+            var sMessageKey = nActionType != 618 ? "A_NOT_MARRIED_B" : "A_MARRIED_B";
+            this.api.gfx.addSpriteBubble(sCellID,this.api.lang.getText(sMessageKey,[oSpriteA.name,oSpriteB.name]));
             break;
          case 900:
             oContext.bSequence = false;
-            var _loc36_ = this.api.datacenter.Sprites.getItemAt(sSenderID);
-            var _loc37_ = this.api.datacenter.Sprites.getItemAt(Number(sParams));
-            if(_loc36_ == undefined || (_loc37_ == undefined || (this.api.ui.getUIComponent("AskCancelChallenge") != undefined || this.api.ui.getUIComponent("AskYesNoIgnoreChallenge") != undefined)))
+            var oSprite1 = this.api.datacenter.Sprites.getItemAt(sSenderID);
+            var oSprite2 = this.api.datacenter.Sprites.getItemAt(Number(sParams));
+            if(oSprite1 == undefined || (oSprite2 == undefined || (this.api.ui.getUIComponent("AskCancelChallenge") != undefined || this.api.ui.getUIComponent("AskYesNoIgnoreChallenge") != undefined)))
             {
                this._parent.refuseChallenge(sSenderID);
-               _loc8_ = false;
+               bCanContinue = false;
                break;
             }
-            this.api.kernel.showMessage(undefined,this.api.lang.getText("A_CHALENGE_B",[this.api.kernel.ChatManager.getLinkName(_loc36_.id,_loc36_.name),this.api.kernel.ChatManager.getLinkName(_loc37_.id,_loc37_.name)]),"INFO_CHAT");
-            if(_loc36_.id == this.api.datacenter.Player.ID)
+            this.api.kernel.showMessage(undefined,this.api.lang.getText("A_CHALENGE_B",[this.api.kernel.ChatManager.getLinkName(oSprite1.id,oSprite1.name),this.api.kernel.ChatManager.getLinkName(oSprite2.id,oSprite2.name)]),"INFO_CHAT");
+            if(oSprite1.id == this.api.datacenter.Player.ID)
             {
-               this.api.kernel.showMessage(this.api.lang.getText("CHALENGE"),this.api.lang.getText("YOU_CHALENGE_B",[_loc37_.name]),"INFO_CANCEL",{name:"Challenge",listener:this._parent,params:{spriteID:_loc36_.id}});
+               this.api.kernel.showMessage(this.api.lang.getText("CHALENGE"),this.api.lang.getText("YOU_CHALENGE_B",[oSprite2.name]),"INFO_CANCEL",{name:"Challenge",listener:this._parent,params:{spriteID:oSprite1.id}});
             }
-            if(_loc37_.id == this.api.datacenter.Player.ID)
+            if(oSprite2.id == this.api.datacenter.Player.ID)
             {
-               if(this.api.kernel.ChatManager.isBlacklisted(_loc36_.name))
+               if(this.api.kernel.ChatManager.isBlacklisted(oSprite1.name))
                {
-                  this._parent.refuseChallenge(_loc36_.id);
-                  _loc8_ = false;
+                  this._parent.refuseChallenge(oSprite1.id);
+                  bCanContinue = false;
                   break;
                }
-               this.api.electron.makeNotification(this.api.lang.getText("A_CHALENGE_YOU",[_loc36_.name]));
-               this.api.kernel.showMessage(this.api.lang.getText("CHALENGE"),this.api.lang.getText("A_CHALENGE_YOU",[_loc36_.name]),"CAUTION_YESNOIGNORE",{name:"Challenge",player:_loc36_.name,listener:this._parent,params:{spriteID:_loc36_.id,player:_loc36_.name}});
+               this.api.electron.makeNotification(this.api.lang.getText("A_CHALENGE_YOU",[oSprite1.name]));
+               this.api.kernel.showMessage(this.api.lang.getText("CHALENGE"),this.api.lang.getText("A_CHALENGE_YOU",[oSprite1.name]),"CAUTION_YESNOIGNORE",{name:"Challenge",player:oSprite1.name,listener:this._parent,params:{spriteID:oSprite1.id,player:oSprite1.name}});
                this.api.sounds.events.onGameInvitation();
             }
             break;
@@ -237,19 +237,19 @@ class dofus.aks.extend.GameActionsEx
             this.api.ui.loadUIComponent("CenterText","CenterText",{text:this.api.lang.getText("YOU_ARE_ATTAC"),background:true,timer:2000},{bForceLoad:true});
             break;
          case 906:
-            var _loc38_ = sParams;
-            var _loc39_ = this.api.datacenter.Sprites.getItemAt(sSenderID);
-            var _loc40_ = this.api.datacenter.Sprites.getItemAt(_loc38_);
-            var _loc41_ = _loc39_.name;
-            var _loc42_ = _loc40_.name;
-            if(_loc41_ == undefined || _loc42_ == undefined)
+            var sSpriteID = sParams;
+            var oSpriteAttacker = this.api.datacenter.Sprites.getItemAt(sSenderID);
+            var oSpriteTarget = this.api.datacenter.Sprites.getItemAt(sSpriteID);
+            var sAttackerName = oSpriteAttacker.name;
+            var sTargetName = oSpriteTarget.name;
+            if(sAttackerName == undefined || sTargetName == undefined)
             {
                break;
             }
-            this.api.kernel.showMessage(undefined,this.api.lang.getText("A_ATTACK_B",[this.api.kernel.ChatManager.getLinkName(_loc39_.id,_loc41_),this.api.kernel.ChatManager.getLinkName(_loc40_.id,_loc42_)]),"INFO_CHAT");
-            if(_loc38_ == this.api.datacenter.Player.ID)
+            this.api.kernel.showMessage(undefined,this.api.lang.getText("A_ATTACK_B",[this.api.kernel.ChatManager.getLinkName(oSpriteAttacker.id,sAttackerName),this.api.kernel.ChatManager.getLinkName(oSpriteTarget.id,sTargetName)]),"INFO_CHAT");
+            if(sSpriteID == this.api.datacenter.Player.ID)
             {
-               this.api.electron.makeNotification(this.api.lang.getText("A_ATTACK_B",[_loc41_,_loc42_]));
+               this.api.electron.makeNotification(this.api.lang.getText("A_ATTACK_B",[sAttackerName,sTargetName]));
                this.api.ui.loadUIComponent("CenterText","CenterText",{text:this.api.lang.getText("YOU_ARE_ATTAC"),background:true,timer:2000},{bForceLoad:true});
                this.api.kernel.SpeakingItemsManager.triggerEvent(dofus.managers.SpeakingItemsManager.SPEAK_TRIGGER_AGRESSED);
             }
@@ -259,80 +259,80 @@ class dofus.aks.extend.GameActionsEx
             }
             break;
          case 909:
-            var _loc43_ = sParams;
-            var _loc44_ = this.api.datacenter.Sprites.getItemAt(sSenderID);
-            var _loc45_ = this.api.datacenter.Sprites.getItemAt(_loc43_);
-            this.api.kernel.showMessage(undefined,this.api.lang.getText("A_ATTACK_B",[_loc44_.name,_loc45_.name]),"INFO_CHAT");
+            var sSpriteID = sParams;
+            var oSpriteAttacker = this.api.datacenter.Sprites.getItemAt(sSenderID);
+            var oSpriteTarget = this.api.datacenter.Sprites.getItemAt(sSpriteID);
+            this.api.kernel.showMessage(undefined,this.api.lang.getText("A_ATTACK_B",[oSpriteAttacker.name,oSpriteTarget.name]),"INFO_CHAT");
             break;
          case 950:
-            var _loc46_ = sParams.split(",");
-            var _loc47_ = _loc46_[0];
-            var _loc48_ = this.api.datacenter.Sprites.getItemAt(_loc47_);
-            var _loc49_ = Number(_loc46_[1]);
-            var _loc50_ = Number(_loc46_[2]) != 1 ? false : true;
-            if(_loc49_ == 8 && (!_loc50_ && (_loc48_.hasCarriedParent() && !_loc48_.uncarryingSprite)))
+            var aParams = sParams.split(",");
+            var sSpriteID = aParams[0];
+            var oSprite = this.api.datacenter.Sprites.getItemAt(sSpriteID);
+            var nStateID = Number(aParams[1]);
+            var bStateBool = Number(aParams[2]) != 1 ? false : true;
+            if(nStateID == 8 && (!bStateBool && (oSprite.hasCarriedParent() && !oSprite.uncarryingSprite)))
             {
-               _loc48_.uncarryingSprite = true;
-               oSeq.addAction(173,false,this.api.gfx,this.api.gfx.uncarriedSprite,[sSenderID,_loc48_.cellNum,false,oSeq]);
-               oSeq.addAction(113,false,this.api.gfx,this.api.gfx.addSpriteExtraClip,[_loc47_,dofus.Constants.CIRCLE_FILE,dofus.Constants.TEAMS_COLOR[_loc48_.Team]]);
+               oSprite.uncarryingSprite = true;
+               oSeq.addAction(173,false,this.api.gfx,this.api.gfx.uncarriedSprite,[sSenderID,oSprite.cellNum,false,oSeq]);
+               oSeq.addAction(113,false,this.api.gfx,this.api.gfx.addSpriteExtraClip,[sSpriteID,dofus.Constants.CIRCLE_FILE,dofus.Constants.TEAMS_COLOR[oSprite.Team]]);
             }
-            oSeq.addAction(114,false,_loc48_,_loc48_.setState,[this.api,_loc49_,_loc50_]);
-            var _loc51_ = !_loc50_ ? "EXIT_STATE" : "ENTER_STATE";
-            oSeq.addAction(115,false,this.api.kernel.ChatManager.feMessagesBuffer,this.api.kernel.ChatManager.feMessagesBuffer.addFightEventMessage,[nActionType,[_loc51_],[this.api.lang.getStateText(_loc49_)],_loc48_.id,_loc48_.name]);
-            var _loc52_ = this.api.ui.getUIComponent("Banner");
-            oSeq.addAction(116,false,_loc52_,_loc52_.statesChanged,[]);
+            oSeq.addAction(114,false,oSprite,oSprite.setState,[this.api,nStateID,bStateBool]);
+            var sStateAction = !bStateBool ? "EXIT_STATE" : "ENTER_STATE";
+            oSeq.addAction(115,false,this.api.kernel.ChatManager.feMessagesBuffer,this.api.kernel.ChatManager.feMessagesBuffer.addFightEventMessage,[nActionType,[sStateAction],[this.api.lang.getStateText(nStateID)],oSprite.id,oSprite.name]);
+            var oBannerUI = this.api.ui.getUIComponent("Banner");
+            oSeq.addAction(116,false,oBannerUI,oBannerUI.statesChanged,[]);
             break;
          case 998:
-            var _loc53_ = sExtraData.split(",");
-            var _loc54_ = _loc53_[0];
-            var _loc55_ = _loc53_[0];
-            var _loc56_ = _loc53_[2];
-            var _loc57_ = _loc53_[3];
-            var _loc58_ = _loc53_[4];
-            var _loc59_ = _loc53_[6];
-            var _loc60_ = _loc53_[7];
-            var _loc61_ = new dofus.datacenter.Effect(undefined,Number(_loc55_),Number(_loc56_),Number(_loc57_),Number(_loc58_),"",Number(_loc59_),Number(_loc60_));
-            var _loc62_ = this.api.datacenter.Sprites.getItemAt(_loc54_);
-            _loc62_.EffectsManager.addEffect(_loc61_);
+            var aExtraData = sExtraData.split(",");
+            var sSpriteID = aExtraData[0];
+            var nSpellID = aExtraData[0];
+            var nValue1 = aExtraData[2];
+            var nValue2 = aExtraData[3];
+            var nValue3 = aExtraData[4];
+            var nValue4 = aExtraData[6];
+            var nValue5 = aExtraData[7];
+            var oEffect = new dofus.datacenter.Effect(undefined,Number(nSpellID),Number(nValue1),Number(nValue2),Number(nValue3),"",Number(nValue4),Number(nValue5));
+            var oSprite = this.api.datacenter.Sprites.getItemAt(sSpriteID);
+            oSprite.EffectsManager.addEffect(oEffect);
             break;
          case 300:
-            var _loc63_ = sParams.split(",");
-            var _loc64_ = this.api.datacenter.Sprites.getItemAt(sSenderID);
-            var _loc65_ = Number(_loc63_[0]);
-            var _loc66_ = Number(_loc63_[1]);
-            var _loc67_ = _loc63_[2];
-            var _loc68_ = Number(_loc63_[3]);
-            var _loc69_ = Number(_loc63_[4]);
-            var _loc70_ = !_global.isNaN(Number(_loc63_[5])) ? (!(_loc63_[5] == "-1" || _loc63_[5] == "-2") ? "anim" + _loc63_[5] : undefined) : String(_loc63_[5]).split("~");
-            var _loc71_ = false;
-            if(Number(_loc63_[5]) == -2)
+            var aParams = sParams.split(",");
+            var oSprite = this.api.datacenter.Sprites.getItemAt(sSenderID);
+            var nSpellID = Number(aParams[0]);
+            var nCellID = Number(aParams[1]);
+            var sGfxFile = aParams[2];
+            var nSpellLevel = Number(aParams[3]);
+            var nTargetCellID = Number(aParams[4]);
+            var vAnimation = !_global.isNaN(Number(aParams[5])) ? (!(aParams[5] == "-1" || aParams[5] == "-2") ? "anim" + aParams[5] : undefined) : String(aParams[5]).split("~");
+            var bIsExtraAnimate = false;
+            if(Number(aParams[5]) == -2)
             {
-               _loc71_ = true;
+               bIsExtraAnimate = true;
             }
-            var _loc72_ = _loc63_[6] != "1" ? false : true;
-            var _loc73_ = new ank.battlefield.datacenter.VisualEffect();
-            _loc73_.file = dofus.Constants.SPELLS_PATH + _loc67_ + ".swf";
-            _loc73_.level = _loc68_;
-            _loc73_.bInFrontOfSprite = _loc72_;
-            _loc73_.params = new dofus.datacenter.Spell(_loc65_,_loc68_).elements;
-            oSeq.addAction(88,false,this.api.kernel,this.api.kernel.showMessage,[undefined,this.api.lang.getText("HAS_LAUNCH_SPELL",[_loc64_.name,this.api.lang.getSpellText(_loc65_).n]),"INFO_FIGHT_CHAT"]);
-            if(_loc70_ != undefined || _loc71_)
+            var bInFrontOfSprite = aParams[6] != "1" ? false : true;
+            var oVisualEffect = new ank.battlefield.datacenter.VisualEffect();
+            oVisualEffect.file = dofus.Constants.SPELLS_PATH + sGfxFile + ".swf";
+            oVisualEffect.level = nSpellLevel;
+            oVisualEffect.bInFrontOfSprite = bInFrontOfSprite;
+            oVisualEffect.params = new dofus.datacenter.Spell(nSpellID,nSpellLevel).elements;
+            oSeq.addAction(88,false,this.api.kernel,this.api.kernel.showMessage,[undefined,this.api.lang.getText("HAS_LAUNCH_SPELL",[oSprite.name,this.api.lang.getSpellText(nSpellID).n]),"INFO_FIGHT_CHAT"]);
+            if(vAnimation != undefined || bIsExtraAnimate)
             {
                if(!this.api.datacenter.Player.isSkippingFightAnimations)
                {
-                  this.api.gfx.spriteLaunchVisualEffect(sSenderID,_loc73_,_loc66_,_loc69_,_loc70_);
+                  this.api.gfx.spriteLaunchVisualEffect(sSenderID,oVisualEffect,nCellID,nTargetCellID,vAnimation);
                }
             }
             if(sSenderID == this.api.datacenter.Player.ID)
             {
-               var _loc74_ = this.api.datacenter.Player.SpellsManager;
-               var _loc75_ = this.api.gfx.mapHandler.getCellData(_loc66_).spriteOnID;
-               var _loc76_ = new dofus.datacenter.LaunchedSpell(_loc65_,_loc75_);
-               _loc74_.addLaunchedSpell(_loc76_);
+               var oSpellsManager = this.api.datacenter.Player.SpellsManager;
+               var nSpriteOnCellID = this.api.gfx.mapHandler.getCellData(nCellID).spriteOnID;
+               var oLaunchedSpell = new dofus.datacenter.LaunchedSpell(nSpellID,nSpriteOnCellID);
+               oSpellsManager.addLaunchedSpell(oLaunchedSpell);
             }
             break;
          case 301:
-            var _loc77_ = Number(sParams);
+            var nSpellID = Number(sParams);
             oSeq.addAction(89,false,this.api.sounds.events,this.api.sounds.events.onGameCriticalHit,[]);
             oSeq.addAction(90,false,this.api.kernel,this.api.kernel.showMessage,[undefined,"(" + this.api.lang.getText("CRITICAL_HIT") + ")","INFO_FIGHT_CHAT"]);
             if(!this.api.datacenter.Player.isSkippingFightAnimations && this.api.electron.isWindowFocused)
@@ -345,9 +345,9 @@ class dofus.aks.extend.GameActionsEx
             }
             else
             {
-               var _loc78_ = this.api.datacenter.Sprites.getItemAt(this.api.datacenter.Player.ID).Team;
-               var _loc79_ = this.api.datacenter.Sprites.getItemAt(_global.parseInt(sSenderID)).Team;
-               if(_loc78_ == _loc79_)
+               var nPlayerTeam = this.api.datacenter.Sprites.getItemAt(this.api.datacenter.Player.ID).Team;
+               var nSpriteTeam = this.api.datacenter.Sprites.getItemAt(_global.parseInt(sSenderID)).Team;
+               if(nPlayerTeam == nSpriteTeam)
                {
                   this.api.kernel.SpeakingItemsManager.triggerEvent(dofus.managers.SpeakingItemsManager.SPEAK_TRIGGER_CC_ALLIED);
                }
@@ -358,10 +358,10 @@ class dofus.aks.extend.GameActionsEx
             }
             break;
          case 302:
-            var _loc80_ = Number(sParams);
-            var _loc81_ = this.api.datacenter.Sprites.getItemAt(sSenderID);
+            var nSpellID = Number(sParams);
+            var oSprite = this.api.datacenter.Sprites.getItemAt(sSenderID);
             oSeq.addAction(92,false,this.api.sounds.events,this.api.sounds.events.onGameCriticalMiss,[]);
-            oSeq.addAction(93,false,this.api.kernel,this.api.kernel.showMessage,[undefined,this.api.lang.getText("HAS_LAUNCH_SPELL",[_loc81_.name,this.api.lang.getSpellText(_loc80_).n]),"INFO_FIGHT_CHAT"]);
+            oSeq.addAction(93,false,this.api.kernel,this.api.kernel.showMessage,[undefined,this.api.lang.getText("HAS_LAUNCH_SPELL",[oSprite.name,this.api.lang.getSpellText(nSpellID).n]),"INFO_FIGHT_CHAT"]);
             oSeq.addAction(94,false,this.api.kernel,this.api.kernel.showMessage,[undefined,"(" + this.api.lang.getText("CRITICAL_MISS") + ")","INFO_FIGHT_CHAT"]);
             oSeq.addAction(95,false,this.api.gfx,this.api.gfx.addSpriteBubble,[sSenderID,this.api.lang.getText("CRITICAL_MISS")]);
             if(sSenderID == this.api.datacenter.Player.ID)
@@ -370,9 +370,9 @@ class dofus.aks.extend.GameActionsEx
             }
             else
             {
-               var _loc82_ = this.api.datacenter.Sprites.getItemAt(this.api.datacenter.Player.ID).Team;
-               var _loc83_ = this.api.datacenter.Sprites.getItemAt(_global.parseInt(sSenderID)).Team;
-               if(_loc82_ == _loc83_)
+               var nPlayerTeam = this.api.datacenter.Sprites.getItemAt(this.api.datacenter.Player.ID).Team;
+               var nSpriteTeam = this.api.datacenter.Sprites.getItemAt(_global.parseInt(sSenderID)).Team;
+               if(nPlayerTeam == nSpriteTeam)
                {
                   this.api.kernel.SpeakingItemsManager.triggerEvent(dofus.managers.SpeakingItemsManager.SPEAK_TRIGGER_EC_ALLIED);
                }
@@ -383,27 +383,27 @@ class dofus.aks.extend.GameActionsEx
             }
             break;
          case 303:
-            var _loc84_ = sParams.split(";");
-            var _loc85_ = _loc84_[0].split(",");
-            var _loc86_ = this.api.datacenter.Sprites.getItemAt(sSenderID);
-            var _loc87_ = _loc86_.mc;
-            var _loc88_ = _loc86_.ToolAnimation;
-            var _loc89_ = Number(_loc85_[0]);
-            var _loc90_ = _loc85_[1];
-            var _loc91_ = Number(_loc85_[2]);
-            var _loc92_ = _loc85_[3] != "1" ? false : true;
-            var _loc93_ = new dofus.datacenter.CloseCombat(new dofus.datacenter.Item(undefined,_loc84_[1]),_loc86_.Guild);
-            oSeq.addAction(96,false,this.api.kernel,this.api.kernel.showMessage,[undefined,this.api.lang.getText("HAS_ATTACK_CC_NAME",[_loc86_.name,_loc84_[1] != 0 ? _loc93_.name : this.api.lang.getSpellText(0).n]),"INFO_FIGHT_CHAT"]);
-            var _loc94_ = new ank.battlefield.datacenter.VisualEffect();
-            _loc94_.file = dofus.Constants.SPELLS_PATH + _loc90_ + ".swf";
-            _loc94_.level = 1;
-            _loc94_.bInFrontOfSprite = _loc92_;
-            _loc94_.params = _loc93_.elements;
-            this.api.gfx.spriteLaunchVisualEffect(sSenderID,_loc94_,_loc89_,_loc91_,_loc88_);
+            var aParams = sParams.split(";");
+            var aFirstParams = aParams[0].split(",");
+            var oSprite = this.api.datacenter.Sprites.getItemAt(sSenderID);
+            var mcSprite = oSprite.mc;
+            var sToolAnimName = oSprite.ToolAnimation;
+            var nCellID = Number(aFirstParams[0]);
+            var sGfxFile = aFirstParams[1];
+            var nTargetCellID = Number(aFirstParams[2]);
+            var bInFrontOfSprite = aFirstParams[3] != "1" ? false : true;
+            var oCloseCombat = new dofus.datacenter.CloseCombat(new dofus.datacenter.Item(undefined,aParams[1]),oSprite.Guild);
+            oSeq.addAction(96,false,this.api.kernel,this.api.kernel.showMessage,[undefined,this.api.lang.getText("HAS_ATTACK_CC_NAME",[oSprite.name,aParams[1] != 0 ? oCloseCombat.name : this.api.lang.getSpellText(0).n]),"INFO_FIGHT_CHAT"]);
+            var oVisualEffect = new ank.battlefield.datacenter.VisualEffect();
+            oVisualEffect.file = dofus.Constants.SPELLS_PATH + sGfxFile + ".swf";
+            oVisualEffect.level = 1;
+            oVisualEffect.bInFrontOfSprite = bInFrontOfSprite;
+            oVisualEffect.params = oCloseCombat.elements;
+            this.api.gfx.spriteLaunchVisualEffect(sSenderID,oVisualEffect,nCellID,nTargetCellID,sToolAnimName);
             break;
          case 304:
-            var _loc95_ = this.api.datacenter.Sprites.getItemAt(sSenderID);
-            var _loc96_ = _loc95_.mc;
+            var oSprite = this.api.datacenter.Sprites.getItemAt(sSenderID);
+            var mcSprite = oSprite.mc;
             oSeq.addAction(99,false,this.api.sounds.events,this.api.sounds.events.onGameCriticalHit,[]);
             oSeq.addAction(100,false,this.api.kernel,this.api.kernel.showMessage,[undefined,"(" + this.api.lang.getText("CRITICAL_HIT") + ")","INFO_FIGHT_CHAT"]);
             if(!this.api.datacenter.Player.isSkippingFightAnimations && this.api.electron.isWindowFocused)
@@ -416,9 +416,9 @@ class dofus.aks.extend.GameActionsEx
             }
             else
             {
-               var _loc97_ = this.api.datacenter.Sprites.getItemAt(this.api.datacenter.Player.ID).Team;
-               var _loc98_ = this.api.datacenter.Sprites.getItemAt(_global.parseInt(sSenderID)).Team;
-               if(_loc97_ == _loc98_)
+               var nPlayerTeam = this.api.datacenter.Sprites.getItemAt(this.api.datacenter.Player.ID).Team;
+               var nSpriteTeam = this.api.datacenter.Sprites.getItemAt(_global.parseInt(sSenderID)).Team;
+               if(nPlayerTeam == nSpriteTeam)
                {
                   this.api.kernel.SpeakingItemsManager.triggerEvent(dofus.managers.SpeakingItemsManager.SPEAK_TRIGGER_CC_ALLIED);
                }
@@ -429,11 +429,11 @@ class dofus.aks.extend.GameActionsEx
             }
             break;
          case 305:
-            var _loc99_ = sParams.split(";");
-            var _loc100_ = this.api.datacenter.Sprites.getItemAt(sSenderID);
-            var _loc101_ = _loc99_[0] != 0 ? new dofus.datacenter.CloseCombat(new dofus.datacenter.Item(undefined,_loc99_[0]),_loc100_.Guild) : this.api.lang.getSpellText(0).n;
+            var aParams = sParams.split(";");
+            var oSprite = this.api.datacenter.Sprites.getItemAt(sSenderID);
+            var vCloseCombatName = aParams[0] != 0 ? new dofus.datacenter.CloseCombat(new dofus.datacenter.Item(undefined,aParams[0]),oSprite.Guild) : this.api.lang.getSpellText(0).n;
             oSeq.addAction(102,false,this.api.sounds.events,this.api.sounds.events.onGameCriticalMiss,[]);
-            oSeq.addAction(103,false,this.api.kernel,this.api.kernel.showMessage,[undefined,this.api.lang.getText("HAS_ATTACK_CC_NAME",[_loc100_.name,_loc101_.name]),"INFO_FIGHT_CHAT"]);
+            oSeq.addAction(103,false,this.api.kernel,this.api.kernel.showMessage,[undefined,this.api.lang.getText("HAS_ATTACK_CC_NAME",[oSprite.name,vCloseCombatName.name]),"INFO_FIGHT_CHAT"]);
             oSeq.addAction(104,false,this.api.kernel,this.api.kernel.showMessage,[undefined,"(" + this.api.lang.getText("CRITICAL_MISS") + ")","INFO_FIGHT_CHAT"]);
             oSeq.addAction(105,false,this.api.gfx,this.api.gfx.addSpriteBubble,[sSenderID,this.api.lang.getText("CRITICAL_MISS")]);
             if(sSenderID == this.api.datacenter.Player.ID)
@@ -442,9 +442,9 @@ class dofus.aks.extend.GameActionsEx
             }
             else
             {
-               var _loc102_ = this.api.datacenter.Sprites.getItemAt(this.api.datacenter.Player.ID).Team;
-               var _loc103_ = this.api.datacenter.Sprites.getItemAt(_global.parseInt(sSenderID)).Team;
-               if(_loc102_ == _loc103_)
+               var nPlayerTeam = this.api.datacenter.Sprites.getItemAt(this.api.datacenter.Player.ID).Team;
+               var nSpriteTeam = this.api.datacenter.Sprites.getItemAt(_global.parseInt(sSenderID)).Team;
+               if(nPlayerTeam == nSpriteTeam)
                {
                   this.api.kernel.SpeakingItemsManager.triggerEvent(dofus.managers.SpeakingItemsManager.SPEAK_TRIGGER_EC_ALLIED);
                }
@@ -455,46 +455,46 @@ class dofus.aks.extend.GameActionsEx
             }
             break;
          case 306:
-            var _loc104_ = sParams.split(",");
-            var _loc105_ = Number(_loc104_[0]);
-            var _loc106_ = Number(_loc104_[1]);
-            var _loc107_ = _loc104_[2];
-            var _loc108_ = Number(_loc104_[3]);
-            var _loc109_ = _loc104_[4] != "1" ? false : true;
-            var _loc110_ = Number(_loc104_[5]);
-            var _loc111_ = this.api.datacenter.Sprites.getItemAt(sSenderID);
-            var _loc112_ = this.api.datacenter.Sprites.getItemAt(_loc110_);
-            var _loc113_ = new ank.battlefield.datacenter.VisualEffect();
-            _loc113_.id = _loc105_;
-            _loc113_.file = dofus.Constants.SPELLS_PATH + _loc107_ + ".swf";
-            _loc113_.level = _loc108_;
-            _loc113_.bInFrontOfSprite = _loc109_;
-            oSeq.addAction(106,false,this.api.kernel,this.api.kernel.showMessage,[undefined,this.api.lang.getText("HAS_START_TRAP",[_loc111_.name,this.api.lang.getSpellText(_loc113_.id).n,_loc112_.name]),"INFO_FIGHT_CHAT"]);
-            oSeq.addAction(107,false,this.api.gfx,this.api.gfx.addVisualEffectOnSprite,[_loc110_,_loc113_,_loc106_,11],1000);
+            var aParams = sParams.split(",");
+            var nSpellID = Number(aParams[0]);
+            var nCellID = Number(aParams[1]);
+            var sGfxFile = aParams[2];
+            var nSpellLevel = Number(aParams[3]);
+            var bInFrontOfSprite = aParams[4] != "1" ? false : true;
+            var nTargetSpriteID = Number(aParams[5]);
+            var oSpellCaster = this.api.datacenter.Sprites.getItemAt(sSenderID);
+            var oSpellTarget = this.api.datacenter.Sprites.getItemAt(nTargetSpriteID);
+            var oVisualEffect = new ank.battlefield.datacenter.VisualEffect();
+            oVisualEffect.id = nSpellID;
+            oVisualEffect.file = dofus.Constants.SPELLS_PATH + sGfxFile + ".swf";
+            oVisualEffect.level = nSpellLevel;
+            oVisualEffect.bInFrontOfSprite = bInFrontOfSprite;
+            oSeq.addAction(106,false,this.api.kernel,this.api.kernel.showMessage,[undefined,this.api.lang.getText("HAS_START_TRAP",[oSpellCaster.name,this.api.lang.getSpellText(oVisualEffect.id).n,oSpellTarget.name]),"INFO_FIGHT_CHAT"]);
+            oSeq.addAction(107,false,this.api.gfx,this.api.gfx.addVisualEffectOnSprite,[nTargetSpriteID,oVisualEffect,nCellID,11],1000);
             break;
          case 307:
-            var _loc114_ = sParams.split(",");
-            var _loc115_ = Number(_loc114_[0]);
-            var _loc116_ = Number(_loc114_[1]);
-            var _loc117_ = Number(_loc114_[3]);
-            var _loc118_ = Number(_loc114_[5]);
-            var _loc119_ = this.api.datacenter.Sprites.getItemAt(sSenderID);
-            var _loc120_ = this.api.datacenter.Sprites.getItemAt(_loc118_);
-            var _loc121_ = new dofus.datacenter.Spell(_loc115_,_loc117_);
-            oSeq.addAction(108,false,this.api.kernel,this.api.kernel.showMessage,[undefined,this.api.lang.getText("HAS_START_GLIPH",[_loc119_.name,_loc121_.name,_loc120_.name]),"INFO_FIGHT_CHAT"]);
+            var aParams = sParams.split(",");
+            var nSpellID = Number(aParams[0]);
+            var nCellID = Number(aParams[1]);
+            var nSpellLevel = Number(aParams[3]);
+            var nTargetSpriteID = Number(aParams[5]);
+            var oSpellCaster = this.api.datacenter.Sprites.getItemAt(sSenderID);
+            var oSpellTarget = this.api.datacenter.Sprites.getItemAt(nTargetSpriteID);
+            var oSpell = new dofus.datacenter.Spell(nSpellID,nSpellLevel);
+            oSeq.addAction(108,false,this.api.kernel,this.api.kernel.showMessage,[undefined,this.api.lang.getText("HAS_START_GLIPH",[oSpellCaster.name,oSpell.name,oSpellTarget.name]),"INFO_FIGHT_CHAT"]);
             break;
          case 308:
-            var _loc122_ = sParams.split(",");
-            var _loc123_ = this.api.datacenter.Sprites.getItemAt(Number(_loc122_[0]));
-            var _loc124_ = Number(_loc122_[1]);
-            oSeq.addAction(109,false,this.api.kernel,this.api.kernel.showMessage,[undefined,this.api.lang.getText("HAS_DODGE_AP",[_loc123_.name,_loc124_]),"INFO_FIGHT_CHAT"]);
+            var aParams = sParams.split(",");
+            var oSprite = this.api.datacenter.Sprites.getItemAt(Number(aParams[0]));
+            var nAPDodge = Number(aParams[1]);
+            oSeq.addAction(109,false,this.api.kernel,this.api.kernel.showMessage,[undefined,this.api.lang.getText("HAS_DODGE_AP",[oSprite.name,nAPDodge]),"INFO_FIGHT_CHAT"]);
             break;
          case 309:
-            var _loc125_ = sParams.split(",");
-            var _loc126_ = this.api.datacenter.Sprites.getItemAt(Number(_loc125_[0]));
-            var _loc127_ = Number(_loc125_[1]);
-            oSeq.addAction(110,false,this.api.kernel,this.api.kernel.showMessage,[undefined,this.api.lang.getText("HAS_DODGE_MP",[_loc126_.name,_loc127_]),"INFO_FIGHT_CHAT"]);
+            var aParams = sParams.split(",");
+            var oSprite = this.api.datacenter.Sprites.getItemAt(Number(aParams[0]));
+            var nMPDodge = Number(aParams[1]);
+            oSeq.addAction(110,false,this.api.kernel,this.api.kernel.showMessage,[undefined,this.api.lang.getText("HAS_DODGE_MP",[oSprite.name,nMPDodge]),"INFO_FIGHT_CHAT"]);
       }
-      return _loc8_;
+      return bCanContinue;
    }
 }

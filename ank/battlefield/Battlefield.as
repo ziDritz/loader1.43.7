@@ -158,16 +158,34 @@ class ank.battlefield.Battlefield extends MovieClip
    }
    function clear()
    {
+      // Clear all visual content from the main container movie clip
       this._mcMainContainer.clear();
+
+      // Remove the movie clip that stores cell IDs from the display list
       this._mcCellIds.removeMovieClip();
+
+      // Reset the ground file reference (no map ground loaded)
       this._sGroundFile = "";
+
+      // Reset the object file reference (no map objects loaded)
       this._sObjectFile = "";
+
+      // Stop and remove any timer associated with the battlefield
       ank.utils.Timer.clear("battlefield");
+
+      // Clear all tasks from the cyclic executor (background or repeated processes)
       ank.utils.CyclicExecutor.getInstance().clear();
+
+      // Reinitialize the data center (reset internal data/state)
       this.initializeDatacenter();
+
+      // Recreate event handlers and listeners
       this.createHandlers();
+
+      // Mark the map as not built anymore
       this._bMapBuild = false;
    }
+
    function setColor(t)
    {
       if(this._bInvadeMode)
@@ -228,32 +246,54 @@ class ank.battlefield.Battlefield extends MovieClip
    }
    function buildMapFromObject(oMap, bBuildAll)
    {
+      // Clear any existing map, visuals, timers, and state
       this.clear();
+
+      // If no map object was provided, abort the build
       if(oMap == undefined)
       {
          return undefined;
       }
+
+      // Notify that map building is starting
       this.onMapBuilding();
-      this.mapHandler.build(oMap,undefined,bBuildAll);
+
+      // Ask the map handler to build the map from the map object
+      // Second parameter is intentionally undefined
+      this.mapHandler.build(oMap, undefined, bBuildAll);
+
+      // If there are no pending loader requests, the map is already loaded
       if(this.mapHandler.LoaderRequestLeft == 0)
       {
          this.DispatchMapLoaded();
       }
       else
       {
+         // Initialize a frame-based timeout to avoid waiting forever
          this._nFrameLoadTimeOut = ank.battlefield.Battlefield.FRAMELOADTIMOUT;
+
+         // Keep a reference to "this" for use inside onEnterFrame
          var ref = this;
+
+         // Check loading progress on every frame
          this.onEnterFrame = function()
          {
+            // Decrease remaining frame timeout
             ref._nFrameLoadTimeOut--;
+
+            // Stop waiting if timeout expires or loading finishes
             if(ref._nFrameLoadTimeOut <= 0 || ref.mapHandler.LoaderRequestLeft <= 0)
             {
+               // Remove the onEnterFrame loop
                delete ref.onEnterFrame;
+
+               // Notify that the map has finished loading
                ref.DispatchMapLoaded();
             }
          };
       }
    }
+
    function DispatchMapLoaded()
    {
       this._bMapBuild = true;
@@ -261,12 +301,26 @@ class ank.battlefield.Battlefield extends MovieClip
    }
    function buildMap(nID, sName, nWidth, nHeight, nBackID, sCompressedData, oMap, bBuildAll)
    {
+      // If no map object was provided, create a new one
       if(oMap == undefined)
       {
          oMap = new ank.battlefield.datacenter.Map();
       }
-      ank.battlefield.utils.Compressor.uncompressMap(nID,sName,nWidth,nHeight,nBackID,sCompressedData,oMap,bBuildAll);
-      this.buildMapFromObject(oMap,bBuildAll);
+
+      // Uncompress the map data and populate the map object
+      ank.battlefield.utils.Compressor.uncompressMap(
+         nID,              // Map ID
+         sName,            // Map name
+         nWidth,           // Map width
+         nHeight,          // Map height
+         nBackID,          // Background ID
+         sCompressedData,  // Compressed map data
+         oMap,             // Target map object to fill
+         bBuildAll         // Whether to build all map elements
+      );
+
+      // Build the map in the battlefield using the populated map object
+      this.buildMapFromObject(oMap, bBuildAll);
    }
    function updateCell(nCellNum, sCompressData, sMaskHexStr, nPermanentLevel)
    {

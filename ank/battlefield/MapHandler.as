@@ -49,6 +49,7 @@ class ank.battlefield.MapHandler
       this._mcContainer = c;
       this.api = _global.API;
    }
+
    function build(oMap, nCellNum, bBuildAll)
    {
       this._oDatacenter.Map = oMap;
@@ -90,213 +91,271 @@ class ank.battlefield.MapHandler
          }
       }
       var nCellIndex = -1;
-      while((nCellIndex = nCellIndex + 1) < nCellCount)
+      // Loop through all map cells
+      while ((nCellIndex = nCellIndex + 1) < nCellCount)
       {
-         if(nCol == nMaxCol)
+         // =====================================================
+         // GRID POSITIONING (row / column / isometric offset)
+         // =====================================================
+
+         // If we reached the last column of the current row
+         if (nCol == nMaxCol)
          {
+            // Move to next row
             nCol = 0;
             nRow += 1;
-            if(nXOffset == 0)
+
+            // Alternate horizontal offset for isometric layout
+            if (nXOffset == 0)
             {
                nXOffset = nCellHalfWidth;
-               nMaxCol -= 1;
+               nMaxCol -= 1; // odd row → fewer columns
             }
             else
             {
                nXOffset = 0;
-               nMaxCol += 1;
+               nMaxCol += 1; // even row → more columns
             }
          }
          else
          {
+            // Move to next column in the same row
             nCol = nCol + 1;
          }
-         if(bSingleCell)
+
+         // =====================================================
+         // SINGLE CELL RENDERING MODE
+         // =====================================================
+
+         // Used when rendering only one specific cell
+         if (bSingleCell)
          {
-            if(nCellIndex < nCellNum)
+            if (nCellIndex < nCellNum)
             {
-               continue;
+               continue; // skip until target cell
             }
-            if(nCellIndex > nCellNum)
+            if (nCellIndex > nCellNum)
             {
-               return undefined;
+               return undefined; // stop once done
             }
          }
+
+         // Retrieve cell data
          var oCellData = oCellData[nCellIndex];
-         if(oCellData.active)
+
+         // =====================================================
+         // ACTIVE CELL
+         // =====================================================
+
+         if (oCellData.active)
          {
+            // -------------------------------------------------
+            // Compute isometric screen coordinates
+            // -------------------------------------------------
+
             var nCellX = nCol * nCellWidth + nXOffset;
-            var nCellY = nRow * nCellHalfHeight - nLevelHeight * (oCellData.groundLevel - 7);
+            var nCellY = nRow * nCellHalfHeight
+                        - nLevelHeight * (oCellData.groundLevel - 7);
+
+            // Store coordinates in cell data
             oCellData.x = nCellX;
             oCellData.y = nCellY;
-            if(oCellData.movement || bBuildAll)
+
+            // =================================================
+            // INTERACTION CELL (clickable / movement cell)
+            // =================================================
+
+            if (oCellData.movement || bBuildAll)
             {
-               if(!bSameCellCount && !mcExternalContainer.InteractionCell["cell" + nCellIndex])
+               // Create interaction cell only if it does not exist
+               if (!bSameCellCount && !mcExternalContainer.InteractionCell["cell" + nCellIndex])
                {
-                  if(!bRenderingEmptyCells)
+                  if (!bRenderingEmptyCells)
                   {
-                     if(ank.battlefield.Constants.STREAMING_METHOD != "")
-                     {
-                        var mcInteractionCell = mcExternalContainer.InteractionCell.attachMovie("i" + oCellData.groundSlope,"cell" + nCellIndex,nCellIndex,{_x:nCellX,_y:nCellY});
-                     }
-                     else
-                     {
-                        mcInteractionCell = mcExternalContainer.InteractionCell.attachMovie("i" + oCellData.groundSlope,"cell" + nCellIndex,nCellIndex,{_x:nCellX,_y:nCellY});
-                     }
+                     // (streaming logic ignored)
+                     mcInteractionCell =
+                        mcExternalContainer.InteractionCell.attachMovie(
+                           "i" + oCellData.groundSlope,
+                           "cell" + nCellIndex,
+                           nCellIndex,
+                           {_x:nCellX,_y:nCellY}
+                        );
                   }
                   else
                   {
-                     mcInteractionCell = mcExternalContainer.InteractionCell.createEmptyMovieClip("cell" + nCellIndex,nCellIndex,{_x:nCellX,_y:nCellY});
+                     // Create empty placeholder
+                     mcInteractionCell =
+                        mcExternalContainer.InteractionCell.createEmptyMovieClip(
+                           "cell" + nCellIndex,
+                           nCellIndex,
+                           {_x:nCellX,_y:nCellY}
+                        );
                   }
+
+                  // Assign Cell prototype and initialize
                   mcInteractionCell.__proto__ = ank.battlefield.mc.Cell.prototype;
                   mcInteractionCell.initialize(this._mcBattlefield);
                }
                else
                {
+                  // Reuse existing interaction cell
                   mcInteractionCell = mcExternalContainer.InteractionCell["cell" + nCellIndex];
                }
+
+               // Link cell data
                oCellData.mc = mcInteractionCell;
                mcInteractionCell.data = oCellData;
             }
             else
             {
+               // Remove interaction cell if movement is disabled
                mcExternalContainer.InteractionCell["cell" + nCellIndex].removeMovieClip();
             }
-            if(oCellData.layerGroundNum != 0)
+
+            // =================================================
+            // GROUND LAYER
+            // =================================================
+
+            if (oCellData.layerGroundNum != 0)
             {
-               if(ank.battlefield.Constants.USE_STREAMING_FILES && ank.battlefield.Constants.STREAMING_METHOD == "explod")
+               // (streaming logic ignored)
+
+               if (!bRenderingEmptyCells)
                {
-                  var bLoadGround = true;
-                  if(bSingleCell)
-                  {
-                     var mcGround = mcExternalContainer.Ground["cell" + nCellIndex];
-                     if(mcGround != undefined && mcGround.lastGroundID == oCellData.layerGroundNum)
-                     {
-                        mcGround.fullLoaded = bLoadGround = false;
-                        this._oLoadingCells[mcGround] = oCellData;
-                        this.onLoadInit(mcGround);
-                     }
-                  }
-                  if(bLoadGround)
-                  {
-                     mcGround = mcExternalContainer.Ground.createEmptyMovieClip("cell" + nCellIndex,nCellIndex);
-                     mcGround.fullLoaded = false;
-                     this._oLoadingCells[mcGround] = oCellData;
-                     this._mclLoader.loadClip(ank.battlefield.Constants.STREAMING_GROUNDS_DIR + oCellData.layerGroundNum + ".swf",mcGround);
-                     this._nLoadRequest = this._nLoadRequest + 1;
-                  }
+                  mcGround =
+                     mcExternalContainer.Ground.attach(
+                        oCellData.layerGroundNum,
+                        "cell" + nCellIndex,
+                        nCellIndex
+                     );
                }
                else
                {
-                  if(!bRenderingEmptyCells)
+                  mcGround = new MovieClip();
+               }
+
+               mcGround.cacheAsBitmap =
+                  _global.CONFIG.cacheAsBitmap["mapHandler/Cell/Ground"];
+
+               mcGround._x = nCellX;
+               mcGround._y = nCellY;
+
+               // Apply slope frame
+               if (oCellData.groundSlope != 1)
+               {
+                  mcGround.gotoAndStop(oCellData.groundSlope);
+               }
+               // Apply rotation if flat ground
+               else if (oCellData.layerGroundRot != 0)
+               {
+                  mcGround._rotation = oCellData.layerGroundRot * 90;
+
+                  // Correct scaling for diagonal rotation
+                  if (mcGround._rotation % 180)
                   {
-                     if(ank.battlefield.Constants.STREAMING_METHOD != "")
-                     {
-                        mcGround = mcExternalContainer.Ground.attachMovie(oCellData.layerGroundNum,"cell" + nCellIndex,nCellIndex);
-                     }
-                     else
-                     {
-                        mcGround = mcExternalContainer.Ground.attach(oCellData.layerGroundNum,"cell" + nCellIndex,nCellIndex);
-                     }
+                     mcGround._yscale = 192.86;
+                     mcGround._xscale = 51.85;
                   }
-                  else
-                  {
-                     mcGround = new MovieClip();
-                  }
-                  mcGround.cacheAsBitmap = _global.CONFIG.cacheAsBitmap["mapHandler/Cell/Ground"];
-                  mcGround._x = nCellX;
-                  mcGround._y = nCellY;
-                  if(oCellData.groundSlope != 1)
-                  {
-                     mcGround.gotoAndStop(oCellData.groundSlope);
-                  }
-                  else if(oCellData.layerGroundRot != 0)
-                  {
-                     mcGround._rotation = oCellData.layerGroundRot * 90;
-                     if(mcGround._rotation % 180)
-                     {
-                        mcGround._yscale = 192.86;
-                        mcGround._xscale = 51.85;
-                     }
-                  }
-                  if(oCellData.layerGroundFlip)
-                  {
-                     mcGround._xscale *= -1;
-                  }
+               }
+
+               // Horizontal flip
+               if (oCellData.layerGroundFlip)
+               {
+                  mcGround._xscale *= -1;
                }
             }
             else
             {
+               // No ground → remove clip
                mcExternalContainer.Ground["cell" + nCellIndex].removeMovieClip();
             }
-            if(oCellData.layerObject1Num != 0)
+
+            // =================================================
+            // OBJECT LAYER 1
+            // =================================================
+
+            if (oCellData.layerObject1Num != 0)
             {
-               if(ank.battlefield.Constants.USE_STREAMING_FILES && ank.battlefield.Constants.STREAMING_METHOD == "explod")
+               // (streaming logic ignored)
+
+               if (!bRenderingEmptyCells)
                {
-                  var bLoadObject1 = true;
-                  if(bSingleCell)
-                  {
-                     var mcObject1 = mcExternalContainer.Object1["cell" + nCellIndex];
-                     if(mcObject1 != undefined && mcObject1.lastObject1ID == oCellData.layerObject1Num)
-                     {
-                        mcObject1.fullLoaded = bLoadObject1 = false;
-                        this._oLoadingCells[mcObject1] = oCellData;
-                        this.onLoadInit(mcObject1);
-                     }
-                  }
-                  if(bLoadObject1)
-                  {
-                     mcObject1 = mcExternalContainer.Object1.createEmptyMovieClip("cell" + nCellIndex,nCellIndex);
-                     mcObject1.fullLoaded = false;
-                     this._oLoadingCells[mcObject1] = oCellData;
-                     this._mclLoader.loadClip(ank.battlefield.Constants.STREAMING_OBJECTS_DIR + oCellData.layerObject1Num + ".swf",mcObject1);
-                     this._nLoadRequest = this._nLoadRequest + 1;
-                  }
+                  mcObject1 =
+                     mcExternalContainer.Object1.attachMovie(
+                        oCellData.layerObject1Num,
+                        "cell" + nCellIndex,
+                        nCellIndex
+                     );
                }
                else
                {
-                  if(!bRenderingEmptyCells)
+                  mcObject1 = new MovieClip();
+               }
+
+               mcObject1.cacheAsBitmap =
+                  _global.CONFIG.cacheAsBitmap["mapHandler/Cell/Object1"];
+
+               mcObject1._x = nCellX;
+               mcObject1._y = nCellY;
+
+               // Rotation only on flat ground
+               if (oCellData.groundSlope == 1 && oCellData.layerObject1Rot != 0)
+               {
+                  mcObject1._rotation = oCellData.layerObject1Rot * 90;
+
+                  if (mcObject1._rotation % 180)
                   {
-                     mcObject1 = mcExternalContainer.Object1.attachMovie(oCellData.layerObject1Num,"cell" + nCellIndex,nCellIndex);
-                  }
-                  else
-                  {
-                     mcObject1 = new MovieClip();
-                  }
-                  mcObject1.cacheAsBitmap = _global.CONFIG.cacheAsBitmap["mapHandler/Cell/Object1"];
-                  mcObject1._x = nCellX;
-                  mcObject1._y = nCellY;
-                  if(oCellData.groundSlope == 1 && oCellData.layerObject1Rot != 0)
-                  {
-                     mcObject1._rotation = oCellData.layerObject1Rot * 90;
-                     if(mcObject1._rotation % 180)
-                     {
-                        mcObject1._yscale = 192.86;
-                        mcObject1._xscale = 51.85;
-                     }
-                  }
-                  if(oCellData.layerObject1Flip)
-                  {
-                     mcObject1._xscale *= -1;
+                     mcObject1._yscale = 192.86;
+                     mcObject1._xscale = 51.85;
                   }
                }
+
+               // Horizontal flip
+               if (oCellData.layerObject1Flip)
+               {
+                  mcObject1._xscale *= -1;
+               }
+
                oCellData.mcObject1 = mcObject1;
             }
             else
             {
                mcExternalContainer.Object1["cell" + nCellIndex].removeMovieClip();
             }
-            if(oCellData.layerObjectExternal != "")
+
+            // =================================================
+            // EXTERNAL INTERACTIVE OBJECT
+            // =================================================
+
+            if (oCellData.layerObjectExternal != "")
             {
-               if(!bRenderingEmptyCells)
+               if (!bRenderingEmptyCells)
                {
-                  var mcExternalObject = mcExternalContainer.Object2.attachClassMovie(ank.battlefield.mc.InteractiveObject,"cellExt" + nCellIndex,nCellIndex * 100 + 1);
+                  var mcExternalObject =
+                     mcExternalContainer.Object2.attachClassMovie(
+                        ank.battlefield.mc.InteractiveObject,
+                        "cellExt" + nCellIndex,
+                        nCellIndex * 100 + 1
+                     );
                }
-               mcExternalObject.cacheAsBitmap = _global.CONFIG.cacheAsBitmap["mapHandler/Cell/ObjectExternal"];
-               mcExternalObject.initialize(this._mcBattlefield,oCellData,oCellData.layerObjectExternalInteractive);
-               mcExternalObject.loadExternalClip(oCellData.layerObjectExternal,oCellData.layerObjectExternalAutoSize);
+
+               mcExternalObject.cacheAsBitmap =
+                  _global.CONFIG.cacheAsBitmap["mapHandler/Cell/ObjectExternal"];
+
+               mcExternalObject.initialize(
+                  this._mcBattlefield,
+                  oCellData,
+                  oCellData.layerObjectExternalInteractive
+               );
+
+               mcExternalObject.loadExternalClip(
+                  oCellData.layerObjectExternal,
+                  oCellData.layerObjectExternalAutoSize
+               );
+
                mcExternalObject._x = nCellX;
                mcExternalObject._y = nCellY;
+
                oCellData.mcObjectExternal = mcExternalObject;
             }
             else
@@ -304,62 +363,57 @@ class ank.battlefield.MapHandler
                mcExternalContainer.Object2["cellExt" + nCellIndex].removeMovieClip();
                delete oCellData.mcObjectExternal;
             }
-            if(oCellData.layerObject2Num != 0)
+
+            // =================================================
+            // OBJECT LAYER 2 (top layer)
+            // =================================================
+
+            if (oCellData.layerObject2Num != 0)
             {
-               if(ank.battlefield.Constants.USE_STREAMING_FILES && ank.battlefield.Constants.STREAMING_METHOD == "explod")
+               // (streaming logic ignored)
+
+               if (!bRenderingEmptyCells)
                {
-                  var bLoadObject2 = true;
-                  if(bSingleCell)
-                  {
-                     var mcObject2 = mcExternalContainer.Object2["cell" + nCellIndex];
-                     if(mcObject2 != undefined && mcObject2.lastObject2ID == oCellData.layerObject2Num)
-                     {
-                        mcObject2.fullLoaded = bLoadObject2 = false;
-                        this._oLoadingCells[mcObject2] = oCellData;
-                        this.onLoadInit(mcObject2);
-                     }
-                  }
-                  if(bLoadObject2)
-                  {
-                     mcObject2 = mcExternalContainer.Object2.createEmptyMovieClip("cell" + nCellIndex,nCellIndex * 100);
-                     mcObject2.fullLoaded = false;
-                     this._oLoadingCells[mcObject2] = oCellData;
-                     this._mclLoader.loadClip(ank.battlefield.Constants.STREAMING_OBJECTS_DIR + oCellData.layerObject2Num + ".swf",mcObject2);
-                     this._nLoadRequest = this._nLoadRequest + 1;
-                  }
+                  mcObject2 =
+                     mcExternalContainer.Object2.attachMovie(
+                        oCellData.layerObject2Num,
+                        "cell" + nCellIndex,
+                        nCellIndex * 100
+                     );
                }
                else
                {
-                  if(!bRenderingEmptyCells)
-                  {
-                     mcObject2 = mcExternalContainer.Object2.attachMovie(oCellData.layerObject2Num,"cell" + nCellIndex,nCellIndex * 100);
-                  }
-                  else
-                  {
-                     mcObject2 = new MovieClip();
-                  }
-                  if(mcObject2)
-                  {
-                     mcObject2.cacheAsBitmap = _global.CONFIG.cacheAsBitmap["mapHandler/Cell/Object2"];
-                     if(oCellData.layerObject2Interactive)
-                     {
-                        mcObject2.__proto__ = ank.battlefield.mc.InteractiveObject.prototype;
-                        mcObject2.initialize(this._mcBattlefield,oCellData,true);
-                     }
-                     mcObject2._x = nCellX;
-                     mcObject2._y = nCellY;
-                     if(oCellData.layerObject2Flip)
-                     {
-                        mcObject2._xscale = -100;
-                     }
-                  }
+                  mcObject2 = new MovieClip();
                }
-               if(mcObject2)
+
+               if (mcObject2)
                {
+                  mcObject2.cacheAsBitmap =
+                     _global.CONFIG.cacheAsBitmap["mapHandler/Cell/Object2"];
+
+                  // Interactive object
+                  if (oCellData.layerObject2Interactive)
+                  {
+                     mcObject2.__proto__ =
+                        ank.battlefield.mc.InteractiveObject.prototype;
+
+                     mcObject2.initialize(this._mcBattlefield, oCellData, true);
+                  }
+
+                  mcObject2._x = nCellX;
+                  mcObject2._y = nCellY;
+
+                  // Horizontal flip
+                  if (oCellData.layerObject2Flip)
+                  {
+                     mcObject2._xscale = -100;
+                  }
+
                   oCellData.mcObject2 = mcObject2;
                }
                else
                {
+                  // Cleanup if creation failed
                   oCellData.layerObject2Num = 0;
                   mcExternalContainer.Object2["cell" + nCellIndex].removeMovieClip();
                   delete oCellData.mcObject2;
@@ -371,31 +425,62 @@ class ank.battlefield.MapHandler
                delete oCellData.mcObject2;
             }
          }
-         else if(bBuildAll)
+
+         // =====================================================
+         // INACTIVE CELL (build-all mode only)
+         // =====================================================
+
+         else if (bBuildAll)
          {
             var nInactiveCellX = nCol * nCellWidth + nXOffset;
             var nInactiveCellY = nRow * nCellHalfHeight;
+
             oCellData.x = nInactiveCellX;
             oCellData.y = nInactiveCellY;
-            var mcInactiveCell = mcExternalContainer.InteractionCell.attachMovie("i1","cell" + nCellIndex,nCellIndex,{_x:nInactiveCellX,_y:nInactiveCellY});
+
+            var mcInactiveCell =
+               mcExternalContainer.InteractionCell.attachMovie(
+                  "i1",
+                  "cell" + nCellIndex,
+                  nCellIndex,
+                  {_x:nInactiveCellX,_y:nInactiveCellY}
+               );
+
             mcInactiveCell.__proto__ = ank.battlefield.mc.Cell.prototype;
             mcInactiveCell.initialize(this._mcBattlefield);
+
             oCellData.mc = mcInactiveCell;
             mcInactiveCell.data = oCellData;
          }
       }
-      if(!bSingleCell)
+
+      // Only adjust the map when rendering the full map
+      // (skip when updating a single cell)
+      if (!bSingleCell)
       {
-         if(ank.battlefield.Constants.USE_STREAMING_FILES && ank.battlefield.Constants.STREAMING_METHOD == "explod")
+         // Check if streaming mode requires delayed adjustment
+         if (ank.battlefield.Constants.USE_STREAMING_FILES
+            && ank.battlefield.Constants.STREAMING_METHOD == "explod")
          {
-            if(this._nAdjustTimer != undefined)
+            // If an adjustment timer already exists, do nothing
+            // (prevents scheduling multiple adjustments)
+            if (this._nAdjustTimer != undefined)
             {
                return undefined;
             }
-            this._nAdjustTimer = _global.setInterval(this,"adjustAndMaskMap",ank.battlefield.MapHandler.TIME_BEFORE_AJUSTING_MAP);
+
+            // Schedule map adjustment after a short delay
+            // This allows streamed assets to finish loading
+            this._nAdjustTimer =
+               _global.setInterval(
+                  this,
+                  "adjustAndMaskMap",
+                  ank.battlefield.MapHandler.TIME_BEFORE_AJUSTING_MAP
+               );
          }
          else
          {
+            // No streaming delay needed → adjust immediately
             this.adjustAndMaskMap();
          }
       }
@@ -679,6 +764,7 @@ class ank.battlefield.MapHandler
          }
       }
    }
+   // CERTAINS OBJECT 2 ONT PLUSIEURS FRAMS DANS LEUR SWF, JE PENSE QUE C'EST ICI QU'EST SET QUELLE FRAME CHOISIR
    function setObject2Frame(nCellNum, frame)
    {
       if(typeof frame == "number" && frame < 1)
@@ -766,15 +852,15 @@ class ank.battlefield.MapHandler
    }
    function getCaseNum(nX, nY)
    {
-      var _loc4_ = this.getWidth();
-      return nX * _loc4_ + nY * (_loc4_ - 1);
+      var nMapWidth_n = this.getWidth();
+      return nX * nMapWidth_n + nY * (nMapWidth_n - 1);
    }
    function getCellHeight(nCellNum)
    {
-      var _loc3_ = this.getCellData(nCellNum);
-      var _loc4_ = !(_loc3_.groundSlope == undefined || _loc3_.groundSlope == 1) ? 0.5 : 0;
-      var _loc5_ = _loc3_.groundLevel != undefined ? _loc3_.groundLevel - 7 : 0;
-      return _loc5_ + _loc4_;
+      var oCellData_o = this.getCellData(nCellNum);
+      var nSlopeOffset_n = !(oCellData_o.groundSlope == undefined || oCellData_o.groundSlope == 1) ? 0.5 : 0;
+      var nLevelOffset_n = oCellData_o.groundLevel != undefined ? oCellData_o.groundLevel - 7 : 0;
+      return nLevelOffset_n + nSlopeOffset_n;
    }
    function getLayerByCellPropertyName(oCellPropertyName)
    {
@@ -820,12 +906,20 @@ class ank.battlefield.MapHandler
    }
    function adjustAndMaskMap()
    {
-      if(this._nAdjustTimer != undefined)
+      // If an adjustment timer exists, cancel it
+      // This prevents repeated or duplicated adjustments
+      if (this._nAdjustTimer != undefined)
       {
          _global.clearInterval(this._nAdjustTimer);
          this._nAdjustTimer = undefined;
       }
+
+      // Apply a mask to the map container
+      // This limits the visible area of the map
       this._mcContainer.applyMask(true);
+
+      // Adjust the map layout (position / size)
+      // Ensures the map fits correctly inside its container
       this._mcContainer.adjusteMap();
    }
    function onLoadInit(mc)
@@ -854,18 +948,19 @@ class ank.battlefield.MapHandler
                }
                else
                {
-                  var _loc0_ = null;
-                  mc._xscale = _loc0_ = 100;
-                  mc._yscale = _loc0_;
+                  var nScale_n = 100;
+                  mc._xscale = nScale_n;
+                  mc._yscale = nScale_n;
                }
             }
             else
             {
                mc._rotation = 0;
-               mc._xscale = _loc0_ = 100;
-               mc._yscale = _loc0_;
+               var nScale_n = 100;
+               mc._xscale = nScale_n;
+               mc._yscale = nScale_n;
             }
-            if(_loc5_.layerGroundFlip)
+            if(oCellData.layerGroundFlip)
             {
                mc._xscale *= -1;
             }
@@ -873,19 +968,19 @@ class ank.battlefield.MapHandler
             {
                mc._xscale *= 1;
             }
-            if(_loc5_.groundSlope != 1)
+            if(oCellData.groundSlope != 1)
             {
-               mc.gotoAndStop(_loc5_.groundSlope);
+               mc.gotoAndStop(oCellData.groundSlope);
             }
-            mc.lastGroundID = _loc5_.layerGroundNum;
+            mc.lastGroundID = oCellData.layerGroundNum;
             break;
          case "Object1":
             mc.cacheAsBitmap = _global.CONFIG.cacheAsBitmap["mapHandler/Cell/Object1"];
-            mc._x = Number(_loc5_.x);
-            mc._y = Number(_loc5_.y);
-            if(_loc5_.groundSlope == 1 && _loc5_.layerObject1Rot != 0)
+            mc._x = Number(oCellData.x);
+            mc._y = Number(oCellData.y);
+            if(oCellData.groundSlope == 1 && oCellData.layerObject1Rot != 0)
             {
-               mc._rotation = _loc5_.layerObject1Rot * 90;
+               mc._rotation = oCellData.layerObject1Rot * 90;
                if(mc._rotation % 180)
                {
                   mc._yscale = 192.86;
@@ -893,17 +988,19 @@ class ank.battlefield.MapHandler
                }
                else
                {
-                  mc._xscale = _loc0_ = 100;
-                  mc._yscale = _loc0_;
+                  var nScale_n = 100;
+                  mc._xscale = nScale_n;
+                  mc._yscale = nScale_n;
                }
             }
             else
             {
                mc._rotation = 0;
-               mc._xscale = _loc0_ = 100;
-               mc._yscale = _loc0_;
+               var nScale_n = 100;
+               mc._xscale = nScale_n;
+               mc._yscale = nScale_n;
             }
-            if(_loc5_.layerObject1Flip)
+            if(oCellData.layerObject1Flip)
             {
                mc._xscale *= -1;
             }
@@ -911,22 +1008,22 @@ class ank.battlefield.MapHandler
             {
                mc._xscale *= 1;
             }
-            mc.lastObject1ID = _loc5_.layerObject1Num;
+            mc.lastObject1ID = oCellData.layerObject1Num;
             break;
          case "Object2":
             mc.cacheAsBitmap = _global.CONFIG.cacheAsBitmap["mapHandler/Cell/Object2"];
-            mc._x = Number(_loc5_.x);
-            mc._y = Number(_loc5_.y);
-            if(_loc5_.layerObject2Interactive)
+            mc._x = Number(oCellData.x);
+            mc._y = Number(oCellData.y);
+            if(oCellData.layerObject2Interactive)
             {
                mc.__proto__ = ank.battlefield.mc.InteractiveObject.prototype;
-               mc.initialize(this._mcBattlefield,_loc5_,true);
+               mc.initialize(this._mcBattlefield,oCellData,true);
             }
             else
             {
                mc.__proto__ = MovieClip.prototype;
             }
-            if(_loc5_.layerObject2Flip)
+            if(oCellData.layerObject2Flip)
             {
                mc._xscale = -100;
             }
@@ -934,33 +1031,33 @@ class ank.battlefield.MapHandler
             {
                mc._xscale = 100;
             }
-            mc.lastObject2ID = _loc5_.layerObject2Num;
+            mc.lastObject2ID = oCellData.layerObject2Num;
       }
-      if(this._oSettingFrames[_loc5_.num] != undefined)
+      if(this._oSettingFrames[oCellData.num] != undefined)
       {
-         var _loc6_ = this._oDatacenter.Map.data[_loc5_.num].mcObject2;
-         for(var s in _loc6_)
+         var oMcObject2s_o = this._oDatacenter.Map.data[oCellData.num].mcObject2;
+         for(var s in oMcObject2s_o)
          {
-            if(_loc6_[s] instanceof MovieClip)
+            if(oMcObject2s_o[s] instanceof MovieClip)
             {
-               _loc6_[s].gotoAndStop(this._oSettingFrames[_loc5_.num]);
+               oMcObject2s_o[s].gotoAndStop(this._oSettingFrames[oCellData.num]);
             }
          }
-         delete this._oSettingFrames[_loc5_.num];
+         delete this._oSettingFrames[oCellData.num];
       }
       mc.fullLoaded = true;
       delete this._oLoadingCells[mc];
    }
    function showTriggers()
    {
-      var _loc2_ = this.getCellsData();
-      for(var i in _loc2_)
+      var aCells_o = this.getCellsData();
+      for(var i in aCells_o)
       {
-         var _loc3_ = _loc2_[i];
-         var _loc4_ = _loc3_.isTrigger;
-         if(_loc4_)
+         var oCell_o = aCells_o[i];
+         var bIsTrigger_b = oCell_o.isTrigger;
+         if(bIsTrigger_b)
          {
-            this.flagCellNonBlocking(_loc3_.num);
+            this.flagCellNonBlocking(oCell_o.num);
          }
       }
    }
@@ -968,30 +1065,30 @@ class ank.battlefield.MapHandler
    {
       if(sTeam1Cells == undefined || sTeam2Cells == undefined)
       {
-         var _loc4_ = this.api.lang.getMapText(this._oDatacenter.Map.id);
-         if(_loc4_.p1 == undefined || _loc4_.p2 == undefined)
+         var oMapText_o = this.api.lang.getMapText(this._oDatacenter.Map.id);
+         if(oMapText_o.p1 == undefined || oMapText_o.p2 == undefined)
          {
             return undefined;
          }
-         sTeam1Cells = _loc4_.p1;
-         sTeam2Cells = _loc4_.p2;
+         sTeam1Cells = oMapText_o.p1;
+         sTeam2Cells = oMapText_o.p2;
       }
       this._bShowingFightCells = true;
-      var _loc5_ = 0;
-      while(_loc5_ < sTeam1Cells.length)
+      var nIndex1_n = 0;
+      while(nIndex1_n < sTeam1Cells.length)
       {
-         var _loc6_ = ank.utils.Compressor.decode64(sTeam1Cells.charAt(_loc5_)) << 6;
-         _loc6_ += ank.utils.Compressor.decode64(sTeam1Cells.charAt(_loc5_ + 1));
-         this.api.gfx.select(_loc6_,dofus.Constants.TEAMS_COLOR[0],"startPosition");
-         _loc5_ += 2;
+         var nCellNum_n = ank.utils.Compressor.decode64(sTeam1Cells.charAt(nIndex1_n)) << 6;
+         nCellNum_n += ank.utils.Compressor.decode64(sTeam1Cells.charAt(nIndex1_n + 1));
+         this.api.gfx.select(nCellNum_n,dofus.Constants.TEAMS_COLOR[0],"startPosition");
+         nIndex1_n += 2;
       }
-      var _loc7_ = 0;
-      while(_loc7_ < sTeam2Cells.length)
+      var nIndex2_n = 0;
+      while(nIndex2_n < sTeam2Cells.length)
       {
-         var _loc8_ = ank.utils.Compressor.decode64(sTeam2Cells.charAt(_loc7_)) << 6;
-         _loc8_ += ank.utils.Compressor.decode64(sTeam2Cells.charAt(_loc7_ + 1));
-         this.api.gfx.select(_loc8_,dofus.Constants.TEAMS_COLOR[1],"startPosition");
-         _loc7_ += 2;
+         var nCellNum2_n = ank.utils.Compressor.decode64(sTeam2Cells.charAt(nIndex2_n)) << 6;
+         nCellNum2_n += ank.utils.Compressor.decode64(sTeam2Cells.charAt(nIndex2_n + 1));
+         this.api.gfx.select(nCellNum2_n,dofus.Constants.TEAMS_COLOR[1],"startPosition");
+         nIndex2_n += 2;
       }
    }
    function flagCellNonBlocking(nCellNum, sSprite)
@@ -1000,47 +1097,47 @@ class ank.battlefield.MapHandler
       {
          sSprite = this.api.datacenter.Player.ID;
       }
-      var _loc4_ = new ank.battlefield.datacenter.VisualEffect();
-      _loc4_.file = dofus.Constants.CLIPS_PATH + "flag.swf";
-      _loc4_.bInFrontOfSprite = true;
-      _loc4_.bTryToBypassContainerColor = true;
-      this.api.gfx.spriteLaunchVisualEffect(sSprite,_loc4_,nCellNum,11,undefined,undefined,undefined,true,false);
+      var oVisualEffect_o = new ank.battlefield.datacenter.VisualEffect();
+      oVisualEffect_o.file = dofus.Constants.CLIPS_PATH + "flag.swf";
+      oVisualEffect_o.bInFrontOfSprite = true;
+      oVisualEffect_o.bTryToBypassContainerColor = true;
+      this.api.gfx.spriteLaunchVisualEffect(sSprite,oVisualEffect_o,nCellNum,11,undefined,undefined,undefined,true,false);
    }
    function drawCellIds()
    {
-      var _loc2_ = this._mcContainer.createEmptyMovieClip("mcCellIds",this._mcContainer.getNextHighestDepth());
-      _loc2_.cacheAsBitmap = true;
-      var _loc3_ = this.validCellsData;
-      var _loc4_ = 0;
-      while(_loc4_ < _loc3_.length)
+      var mcCellIds_mc = this._mcContainer.createEmptyMovieClip("mcCellIds",this._mcContainer.getNextHighestDepth());
+      mcCellIds_mc.cacheAsBitmap = true;
+      var aValidCells_o = this.validCellsData;
+      var nIndex_n = 0;
+      while(nIndex_n < aValidCells_o.length)
       {
-         var _loc5_ = _loc3_[_loc4_];
-         var _loc6_ = _loc2_.createTextField("cell" + _loc5_.num,_loc2_.getNextHighestDepth(),_loc5_.x,_loc5_.y,0,0);
-         _loc6_.selectable = false;
-         _loc6_.mouseWheelEnabled = false;
-         _loc6_.autoSize = true;
-         var _loc7_ = new TextFormat();
-         _loc7_.align = "center";
-         _loc7_.size = 8;
-         if(_loc5_.isTrigger)
+         var oCell_o = aValidCells_o[nIndex_n];
+         var tfCell_tf = mcCellIds_mc.createTextField("cell" + oCell_o.num,mcCellIds_mc.getNextHighestDepth(),oCell_o.x,oCell_o.y,0,0);
+         tfCell_tf.selectable = false;
+         tfCell_tf.mouseWheelEnabled = false;
+         tfCell_tf.autoSize = true;
+         var tfFormat_o = new TextFormat();
+         tfFormat_o.align = "center";
+         tfFormat_o.size = 8;
+         if(oCell_o.isTrigger)
          {
-            _loc7_.color = 16773939;
+            tfFormat_o.color = 16773939;
          }
          else
          {
-            _loc7_.color = 16777215;
+            tfFormat_o.color = 16777215;
          }
-         _loc7_.bold = true;
-         _loc6_.setNewTextFormat(_loc7_);
-         _loc6_._alpha = 70;
-         _loc6_.text = String(_loc5_.num);
-         _loc6_._x -= _loc6_._width / 2;
-         _loc6_._y -= _loc6_._height / 2;
-         var _loc8_ = [];
-         _loc8_.push(new flash.filters.GlowFilter(0,40,2,2,4,1,false,false));
-         _loc6_.filters = _loc8_;
-         _loc4_ = _loc4_ + 1;
+         tfFormat_o.bold = true;
+         tfCell_tf.setNewTextFormat(tfFormat_o);
+         tfCell_tf._alpha = 70;
+         tfCell_tf.text = String(oCell_o.num);
+         tfCell_tf._x -= tfCell_tf._width / 2;
+         tfCell_tf._y -= tfCell_tf._height / 2;
+         var aFilters_o = [];
+         aFilters_o.push(new flash.filters.GlowFilter(0,40,2,2,4,1,false,false));
+         tfCell_tf.filters = aFilters_o;
+         nIndex_n = nIndex_n + 1;
       }
-      return _loc2_;
+      return mcCellIds_mc;
    }
 }

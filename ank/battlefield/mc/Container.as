@@ -64,37 +64,71 @@ class ank.battlefield.mc.Container extends MovieClip
          this.createEmptyMovieClip("LoadManager",600);
       }
    }
-   function applyMask(bFilled)
+   function applyMask(bFilled:Boolean)
    {
-      var _loc3_ = this._oDatacenter.Map.width - 1;
-      var _loc4_ = this._oDatacenter.Map.height - 1;
-      if(bFilled == undefined)
+      // Maximum X cell index of the map (width in cells - 1)
+      var nMapMaxX:Number = this._oDatacenter.Map.width - 1;
+
+      // Maximum Y cell index of the map (height in cells - 1)
+      var nMapMaxY:Number = this._oDatacenter.Map.height - 1;
+
+      // Default behavior: create a filled (visible) mask
+      if (bFilled == undefined)
       {
          bFilled = true;
       }
-      this.createEmptyMovieClip("_mcMask",10);
-      if(bFilled)
+
+      // Create the movie clip that will be used as a mask
+      this.createEmptyMovieClip("_mcMask", 10);
+
+      if (bFilled)
       {
+         // Draw a filled rectangle covering the entire map area
          this._mcMask.beginFill(0);
-         this._mcMask.moveTo(0,0);
-         this._mcMask.lineTo(_loc3_ * ank.battlefield.Constants.CELL_WIDTH,0);
-         this._mcMask.lineTo(_loc3_ * ank.battlefield.Constants.CELL_WIDTH,_loc4_ * ank.battlefield.Constants.CELL_HEIGHT);
-         this._mcMask.lineTo(0,_loc4_ * ank.battlefield.Constants.CELL_HEIGHT);
-         this._mcMask.lineTo(0,0);
+
+         // Start drawing from the top-left corner
+         this._mcMask.moveTo(0, 0);
+
+         // Top edge
+         this._mcMask.lineTo(
+            nMapMaxX * ank.battlefield.Constants.CELL_WIDTH,
+            0
+         );
+
+         // Right edge
+         this._mcMask.lineTo(
+            nMapMaxX * ank.battlefield.Constants.CELL_WIDTH,
+            nMapMaxY * ank.battlefield.Constants.CELL_HEIGHT
+         );
+
+         // Bottom edge
+         this._mcMask.lineTo(
+            0,
+            nMapMaxY * ank.battlefield.Constants.CELL_HEIGHT
+         );
+
+         // Close the rectangle
+         this._mcMask.lineTo(0, 0);
+
          this._mcMask.endFill();
       }
       else
       {
+         // Draw a tiny rectangle far outside the visible area
+         // This effectively hides everything when used as a mask
          this._mcMask.beginFill(0);
-         this._mcMask.moveTo(-1000,-1000);
-         this._mcMask.lineTo(-1000,-999);
-         this._mcMask.lineTo(-999,-999);
-         this._mcMask.lineTo(-999,-1000);
-         this._mcMask.lineTo(-1000,-1000);
+         this._mcMask.moveTo(-1000, -1000);
+         this._mcMask.lineTo(-1000, -999);
+         this._mcMask.lineTo(-999, -999);
+         this._mcMask.lineTo(-999, -1000);
+         this._mcMask.lineTo(-1000, -1000);
          this._mcMask.endFill();
       }
+
+      // Apply the mask to the current movie clip
       this.setMask(this._mcMask);
    }
+
    function adjusteMap(Void)
    {
       this.zoomMap();
@@ -131,11 +165,26 @@ class ank.battlefield.mc.Container extends MovieClip
    }
    function center(Void)
    {
-      var _loc3_ = this._xscale / 100;
-      var _loc4_ = this._yscale / 100;
-      var _loc5_ = (this._mcBattlefield.screenWidth - ank.battlefield.Constants.CELL_WIDTH * _loc3_ * (this._oDatacenter.Map.width - 1)) / 2;
-      var _loc6_ = (this._mcBattlefield.screenHeight - ank.battlefield.Constants.CELL_HEIGHT * _loc4_ * (this._oDatacenter.Map.height - 1)) / 2;
-      this.setXY(_loc5_,_loc6_);
+      // Current horizontal scale factor (1.0 = 100%)
+      var nScaleX:Number = this._xscale / 100;
+
+      // Current vertical scale factor (1.0 = 100%)
+      var nScaleY:Number = this._yscale / 100;
+
+      // X offset needed to horizontally center the map on screen
+      var nCenterOffsetX:Number =
+         (this._mcBattlefield.screenWidth
+         - ank.battlefield.Constants.CELL_WIDTH * nScaleX * (this._oDatacenter.Map.width - 1))
+         / 2;
+
+      // Y offset needed to vertically center the map on screen
+      var nCenterOffsetY:Number =
+         (this._mcBattlefield.screenHeight
+         - ank.battlefield.Constants.CELL_HEIGHT * nScaleY * (this._oDatacenter.Map.height - 1))
+         / 2;
+
+      // Move the map to the computed centered position
+      this.setXY(nCenterOffsetX, nCenterOffsetY);
    }
    function zoomMap(Void)
    {

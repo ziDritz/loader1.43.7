@@ -1,69 +1,79 @@
 class ank.battlefield.LoadManager extends MovieClip
 {
-   var _mcMainContainer;
+   var _mcMainContainer:MovieClip;
    var dispatchEvent;
-   static var _aMovieClipLoader;
-   static var MAX_PARALLELE_LOAD = 3;
-   static var STATE_WAITING = 0;
-   static var STATE_LOADING = 1;
-   static var STATE_LOADED = 2;
-   static var STATE_ERROR = -1;
-   static var STATE_UNKNOWN = -1;
-   function LoadManager(mc)
+   static var _aMovieClipLoader:Array;
+   static var MAX_PARALLELE_LOAD:Number = 3;
+   static var STATE_WAITING:Number = 0;
+   static var STATE_LOADING:Number = 1;
+   static var STATE_LOADED:Number = 2;
+   static var STATE_ERROR:Number = -1;
+   static var STATE_UNKNOWN:Number = -1;
+
+   function LoadManager(mcMainContainer:MovieClip)
    {
       super();
-      this.initialize(mc);
+      this.initialize(mcMainContainer);
    }
+
    function processLoad()
    {
-      var _loc2_ = 0;
-      while(_loc2_ < ank.battlefield.LoadManager._aMovieClipLoader.length)
+      var nIndex:Number = 0;
+      while(nIndex < ank.battlefield.LoadManager._aMovieClipLoader.length)
       {
          if(this.waitingRequest > ank.battlefield.LoadManager.MAX_PARALLELE_LOAD)
          {
             return undefined;
          }
-         if(ank.battlefield.LoadManager._aMovieClipLoader[_loc2_].state == ank.battlefield.LoadManager.STATE_WAITING)
+
+         var oLoaderEntry:Object = ank.battlefield.LoadManager._aMovieClipLoader[nIndex];
+         if(oLoaderEntry.state == ank.battlefield.LoadManager.STATE_WAITING)
          {
-            ank.battlefield.LoadManager._aMovieClipLoader[_loc2_].state = ank.battlefield.LoadManager.STATE_LOADING;
-            ank.battlefield.LoadManager._aMovieClipLoader[_loc2_].loader.loadClip(ank.battlefield.LoadManager._aMovieClipLoader[_loc2_].file,ank.battlefield.LoadManager._aMovieClipLoader[_loc2_].container);
+            oLoaderEntry.state = ank.battlefield.LoadManager.STATE_LOADING;
+            oLoaderEntry.loader.loadClip(oLoaderEntry.file, oLoaderEntry.container);
          }
-         _loc2_ = _loc2_ + 1;
+         nIndex++;
       }
    }
-   function getFileByMc(mc)
+
+   function getFileByMc(mcContainer:MovieClip):Object
    {
-      var _loc3_ = 0;
-      while(_loc3_ < ank.battlefield.LoadManager._aMovieClipLoader.length)
+      var nIndex:Number = 0;
+      while(nIndex < ank.battlefield.LoadManager._aMovieClipLoader.length)
       {
-         if(ank.battlefield.LoadManager._aMovieClipLoader[_loc3_].container === mc)
+         var oLoaderEntry:Object = ank.battlefield.LoadManager._aMovieClipLoader[nIndex];
+         if(oLoaderEntry.container === mcContainer)
          {
-            return ank.battlefield.LoadManager._aMovieClipLoader[_loc3_];
+            return oLoaderEntry;
          }
-         _loc3_ = _loc3_ + 1;
+         nIndex++;
       }
       return undefined;
    }
-   function getFileByName(sFile)
+
+   function getFileByName(sFile:String):Object
    {
-      var _loc3_ = 0;
-      while(_loc3_ < ank.battlefield.LoadManager._aMovieClipLoader.length)
+      var nIndex:Number = 0;
+      while(nIndex < ank.battlefield.LoadManager._aMovieClipLoader.length)
       {
-         if(ank.battlefield.LoadManager._aMovieClipLoader[_loc3_].file == sFile)
+         var oLoaderEntry:Object = ank.battlefield.LoadManager._aMovieClipLoader[nIndex];
+         if(oLoaderEntry.file == sFile)
          {
-            return ank.battlefield.LoadManager._aMovieClipLoader[_loc3_];
+            return oLoaderEntry;
          }
-         _loc3_ = _loc3_ + 1;
+         nIndex++;
       }
       return undefined;
    }
-   function initialize(mc)
+
+   function initialize(mcMainContainer:MovieClip)
    {
       mx.events.EventDispatcher.initialize(this);
       ank.battlefield.LoadManager._aMovieClipLoader = [];
-      this._mcMainContainer = mc;
+      this._mcMainContainer = mcMainContainer;
    }
-   function loadFile(sFile)
+
+   function loadFile(sFile:String)
    {
       if(this.isRegister(sFile))
       {
@@ -75,167 +85,193 @@ class ank.battlefield.LoadManager extends MovieClip
       }
       else
       {
-         var _loc3_ = {};
-         _loc3_.file = sFile;
-         _loc3_.bitLoaded = 0;
-         _loc3_.bitTotal = 1;
-         _loc3_.state = ank.battlefield.LoadManager.STATE_WAITING;
-         _loc3_.loader = new MovieClipLoader();
-         var _loc4_ = this;
-         _loc3_.loader.addListener(_loc4_);
-         _loc3_.container = this._mcMainContainer.createEmptyMovieClip(sFile.split("/").join("_").split(".").join("_"),this._mcMainContainer.getNextHighestDepth());
-         ank.battlefield.LoadManager._aMovieClipLoader.push(_loc3_);
+         var oLoaderEntry:Object = {};
+         oLoaderEntry.file = sFile;
+         oLoaderEntry.bitLoaded = 0;
+         oLoaderEntry.bitTotal = 1;
+         oLoaderEntry.state = ank.battlefield.LoadManager.STATE_WAITING;
+         oLoaderEntry.loader = new MovieClipLoader();
+
+         var selfRef = this;
+         oLoaderEntry.loader.addListener(selfRef);
+
+         oLoaderEntry.container = this._mcMainContainer.createEmptyMovieClip(
+            sFile.split("/").join("_").split(".").join("_"),
+            this._mcMainContainer.getNextHighestDepth()
+         );
+
+         ank.battlefield.LoadManager._aMovieClipLoader.push(oLoaderEntry);
+
          if(this.waitingRequest > ank.battlefield.LoadManager.MAX_PARALLELE_LOAD)
          {
             return undefined;
          }
-         _loc3_.state = ank.battlefield.LoadManager.STATE_LOADING;
-         _loc3_.loader.loadClip(sFile,_loc3_.container);
+
+         oLoaderEntry.state = ank.battlefield.LoadManager.STATE_LOADING;
+         oLoaderEntry.loader.loadClip(sFile, oLoaderEntry.container);
       }
    }
-   function loadFiles(aFiles)
+
+   function loadFiles(aFiles:Array)
    {
-      var _loc3_ = 0;
-      while(_loc3_ < aFiles.length)
+      var nIndex:Number = 0;
+      while(nIndex < aFiles.length)
       {
-         this.loadFile(aFiles[_loc3_]);
-         _loc3_ = _loc3_ + 1;
+         this.loadFile(aFiles[nIndex]);
+         nIndex++;
       }
    }
-   function get waitingRequest()
+
+   function get waitingRequest():Number
    {
-      var _loc2_ = 0;
-      var _loc3_ = 0;
-      while(_loc3_ < ank.battlefield.LoadManager._aMovieClipLoader.length)
+      var nCount:Number = 0;
+      var nIndex:Number = 0;
+      while(nIndex < ank.battlefield.LoadManager._aMovieClipLoader.length)
       {
-         if(ank.battlefield.LoadManager._aMovieClipLoader[_loc3_].state == ank.battlefield.LoadManager.STATE_LOADING)
+         var oLoaderEntry:Object = ank.battlefield.LoadManager._aMovieClipLoader[nIndex];
+         if(oLoaderEntry.state == ank.battlefield.LoadManager.STATE_LOADING)
          {
-            _loc2_ = _loc2_ + 1;
+            nCount++;
          }
-         _loc3_ = _loc3_ + 1;
+         nIndex++;
       }
-      return _loc2_;
+      return nCount;
    }
-   function isRegister(sFile)
+
+   function isRegister(sFile:String):Boolean
    {
-      var _loc3_ = 0;
-      while(_loc3_ < ank.battlefield.LoadManager._aMovieClipLoader.length)
+      var nIndex:Number = 0;
+      while(nIndex < ank.battlefield.LoadManager._aMovieClipLoader.length)
       {
-         if(sFile == ank.battlefield.LoadManager._aMovieClipLoader[_loc3_].file)
+         var oLoaderEntry:Object = ank.battlefield.LoadManager._aMovieClipLoader[nIndex];
+         if(sFile == oLoaderEntry.file)
          {
             return true;
          }
-         _loc3_ = _loc3_ + 1;
+         nIndex++;
       }
       return false;
    }
-   function isLoaded(sFile)
+
+   function isLoaded(sFile:String):Boolean
    {
       if(!this.isRegister(sFile))
       {
          return false;
       }
-      var _loc3_ = 0;
-      while(_loc3_ < ank.battlefield.LoadManager._aMovieClipLoader.length)
+
+      var nIndex:Number = 0;
+      while(nIndex < ank.battlefield.LoadManager._aMovieClipLoader.length)
       {
-         if(sFile == ank.battlefield.LoadManager._aMovieClipLoader[_loc3_].file)
+         var oLoaderEntry:Object = ank.battlefield.LoadManager._aMovieClipLoader[nIndex];
+         if(sFile == oLoaderEntry.file)
          {
-            return ank.battlefield.LoadManager._aMovieClipLoader[_loc3_].state == ank.battlefield.LoadManager.STATE_LOADED;
+            return oLoaderEntry.state == ank.battlefield.LoadManager.STATE_LOADED;
          }
-         _loc3_ = _loc3_ + 1;
+         nIndex++;
       }
    }
-   function areRegister(aFiles)
+
+   function areRegister(aFiles:Array):Boolean
    {
-      var _loc3_ = aFiles.length > 0;
-      var _loc4_ = 0;
-      while(_loc4_ < aFiles.length && _loc3_)
+      var bAllRegistered:Boolean = aFiles.length > 0;
+      var nIndex:Number = 0;
+      while(nIndex < aFiles.length && bAllRegistered)
       {
-         _loc3_ = _loc3_ && this.isRegister(aFiles[_loc4_]);
-         _loc4_ = _loc4_ + 1;
+         bAllRegistered = bAllRegistered && this.isRegister(aFiles[nIndex]);
+         nIndex++;
       }
-      return _loc3_;
+      return bAllRegistered;
    }
-   function areLoaded(aFiles)
+
+   function areLoaded(aFiles:Array):Boolean
    {
       if(!this.areRegister(aFiles))
       {
          return false;
       }
-      var _loc3_ = aFiles.length > 0;
-      var _loc4_ = 0;
-      while(_loc4_ < aFiles.length && _loc3_)
+
+      var bAllLoaded:Boolean = aFiles.length > 0;
+      var nIndex:Number = 0;
+      while(nIndex < aFiles.length && bAllLoaded)
       {
-         _loc3_ = _loc3_ && this.isLoaded(aFiles[_loc4_]);
-         _loc4_ = _loc4_ + 1;
+         bAllLoaded = bAllLoaded && this.isLoaded(aFiles[nIndex]);
+         nIndex++;
       }
-      return _loc3_;
+      return bAllLoaded;
    }
-   function getFileState(sFile)
+
+   function getFileState(sFile:String):Number
    {
-      var _loc3_ = this.getFileByName(sFile);
-      if(_loc3_)
+      var oLoaderEntry:Object = this.getFileByName(sFile);
+      if(oLoaderEntry)
       {
-         return _loc3_.state;
+         return oLoaderEntry.state;
       }
       return ank.battlefield.LoadManager.STATE_UNKNOWN;
    }
-   function getProgression(sFile)
+
+   function getProgression(sFile:String):Number
    {
-      var _loc3_ = this.getFileByName(sFile);
-      if(!_loc3_)
+      var oLoaderEntry:Object = this.getFileByName(sFile);
+      if(!oLoaderEntry)
       {
          return undefined;
       }
-      if(_loc3_.state == ank.battlefield.LoadManager.STATE_LOADED)
+      if(oLoaderEntry.state == ank.battlefield.LoadManager.STATE_LOADED)
       {
          return 100;
       }
-      return Math.floor(_loc3_.bitLoaded / _loc3_.bitTotal * 100);
+      return Math.floor(oLoaderEntry.bitLoaded / oLoaderEntry.bitTotal * 100);
    }
-   function getProgressions(aFiles)
+
+   function getProgressions(aFiles:Array):Number
    {
-      var _loc3_ = 0;
-      var _loc4_ = 0;
-      while(_loc4_ < aFiles.length)
+      var nTotalProgress:Number = 0;
+      var nIndex:Number = 0;
+      while(nIndex < aFiles.length)
       {
-         var _loc5_ = this.getProgression(aFiles[_loc4_]);
-         if(_loc5_ == undefined)
+         var nProgression:Number = this.getProgression(aFiles[nIndex]);
+         if(nProgression == undefined)
          {
             return undefined;
          }
-         _loc3_ += _loc5_;
-         _loc4_ = _loc4_ + 1;
+         nTotalProgress += nProgression;
+         nIndex++;
       }
-      return Math.floor(_loc3_ / aFiles.length);
+      return Math.floor(nTotalProgress / aFiles.length);
    }
-   function onFileLoaded(sFile)
+
+   function onFileLoaded(sFile:String)
    {
-      this.dispatchEvent({type:"onFileLoaded",value:sFile});
+      this.dispatchEvent({type:"onFileLoaded", value:sFile});
    }
-   function onLoadError(mc)
+
+   function onLoadError(mcContainer:MovieClip)
    {
-      var _loc3_ = this.getFileByMc(mc);
-      _loc3_.state = ank.battlefield.LoadManager.STATE_ERROR;
-      delete _loc3_.loader;
+      var oLoaderEntry:Object = this.getFileByMc(mcContainer);
+      oLoaderEntry.state = ank.battlefield.LoadManager.STATE_ERROR;
+      delete oLoaderEntry.loader;
       this.processLoad();
    }
-   function onLoadInit(mc)
+
+   function onLoadInit(mcContainer:MovieClip)
    {
-      var _loc3_ = this.getFileByMc(mc);
-      _loc3_.state = ank.battlefield.LoadManager.STATE_LOADED;
-      delete _loc3_.loader;
-      this.onFileLoaded(_loc3_.file);
+      var oLoaderEntry:Object = this.getFileByMc(mcContainer);
+      oLoaderEntry.state = ank.battlefield.LoadManager.STATE_LOADED;
+      delete oLoaderEntry.loader;
+      this.onFileLoaded(oLoaderEntry.file);
       this.processLoad();
    }
-   function onLoadProgress(mc, nBL, nBT)
+
+   function onLoadProgress(mcContainer:MovieClip, nBitLoaded:Number, nBitTotal:Number)
    {
-      var _loc5_ = this.getFileByMc(mc);
-      if(!_loc5_)
+      var oLoaderEntry:Object = this.getFileByMc(mcContainer);
+      if(!oLoaderEntry)
       {
          return undefined;
       }
-      _loc5_.bitLoaded = nBL;
-      _loc5_.bitTotal = nBT;
+      oLoaderEntry.bitLoaded = nBitLoaded;
+      oLoaderEntry.bitTotal = nBitTotal;
    }
 }
