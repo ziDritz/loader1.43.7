@@ -9,7 +9,7 @@
  * serves as a factory for creating various types of sprites (characters, monsters, NPCs, etc.)
  * from server data packets. It handles parsing of raw server strings, instantiation of appropriate
  * sprite classes, and configuration of sprite properties like appearance, accessories, and stats.
- * (From reading the code, I think CharactersManagers also init other properties like AP and MP)
+ * (Note: From reading the code, I think CharactersManagers also init other properties like AP and MP)
  * 
  * In Sprite Creation from Server Data process:
  * In the sprite creation workflow, CharactersManager receives
@@ -86,101 +86,123 @@ class dofus.managers.CharactersManager extends dofus.utils.ApiElement
          this.api.ui.getUIComponent("Inventory").refreshSpriteViewer();
       }
    }
-   function createCharacter(sID, sName, oData)
-   {
-      if(this.api.datacenter.Player.isAuthorized && oData.gfxID == ank.battlefield.datacenter.Sprite.ANGELS_OF_THE_WORLD_SPRITE_ID)
-      {
-         oData.gfxID = ank.battlefield.datacenter.Sprite.ANGELS_OF_THE_WORLD_REPLACEMENT_SPRITE_ID;
-      }
-      var oCharacter = this.api.datacenter.Sprites.getItemAt(sID);
-      if(oCharacter == undefined)
-      {
-         oCharacter = new dofus.datacenter.Character(sID,ank.battlefield.mc.Sprite,dofus.Constants.CLIPS_PERSOS_PATH + oData.gfxID + ".swf",oData.cell,oData.dir,oData.gfxID,oData.title);
-         this.api.datacenter.Sprites.addItemAt(sID,oCharacter);
-      }
-      oCharacter.GameActionsManager.init();
-      oCharacter.cellNum = Number(oData.cell);
-      oCharacter.scaleX = oData.scaleX;
-      oCharacter.scaleY = oData.scaleY;
-      oCharacter.name = sName;
-      oCharacter.Guild = Number(oData.spriteType);
-      oCharacter.Level = Number(oData.level);
-      oCharacter.Sex = oData.sex == undefined ? 1 : oData.sex;
-      oCharacter.color1 = oData.color1 != -1 ? Number("0x" + oData.color1) : oData.color1;
-      oCharacter.color2 = oData.color2 != -1 ? Number("0x" + oData.color2) : oData.color2;
-      oCharacter.color3 = oData.color3 != -1 ? Number("0x" + oData.color3) : oData.color3;
-      oCharacter.Aura = oData.aura == undefined ? 0 : oData.aura;
-      oCharacter.Merchant = oData.merchant != "1" ? false : true;
-      oCharacter.serverID = Number(oData.serverID);
-      oCharacter.alignment = oData.alignment;
-      oCharacter.rank = oData.rank;
-      oCharacter.mount = oData.mount;
-      oCharacter.isDead = oData.isDead == 1;
-      oCharacter.deathState = Number(oData.isDead);
-      oCharacter.deathCount = Number(oData.deathCount);
-      oCharacter.lvlMax = Number(oData.lvlMax);
-      oCharacter.pvpGain = Number(oData.pvpGain);
-      oCharacter.hasTtgCollection = oData.hasTtgCollection;
-      oCharacter.hasCandy = oData.hasCandy;
-      oCharacter.hasBuff = oData.hasBuff;
-      this.setSpriteAccessories(oCharacter,oData.accessories);
-      if(oData.LP != undefined)
-      {
-         oCharacter.LP = oData.LP;
-      }
-      if(oData.LPmax != undefined)
-      {
-         oCharacter.LPmax = oData.LPmax;
-      }
-      if(oData.AP != undefined)
-      {
-         oCharacter.AP = oData.AP;
-      }
-      if(oData.AP != undefined)
-      {
-         oCharacter.APinit = oData.AP;
-      }
-      if(oData.MP != undefined)
-      {
-         oCharacter.MP = oData.MP;
-      }
-      if(oData.MP != undefined)
-      {
-         oCharacter.MPinit = oData.MP;
-      }
-      if(oData.resistances != undefined)
-      {
-         oCharacter.resistances = oData.resistances;
-      }
-      oCharacter.Team = oData.team != undefined ? oData.team : null;
-      if(oData.emote != undefined && oData.emote.length != 0)
-      {
-         oCharacter.direction = ank.battlefield.utils.Pathfinding.convertHeightToFourDirection(oData.dir);
-         if(oData.emoteTimer != undefined && oData.emote.length != 0)
-         {
+
+
+/**
+ * createCharacter
+ * Purpose: Creates a Character sprite from server data
+ * Parameters:
+ *   sID: Unique sprite identifier from server
+ *   sName: Display name for the character
+ *   oData: Parsed server data object containing properties like gfxID, colors, accessories, stats
+ * Data flow: Transforms raw server data object into a fully configured Character sprite instance registered in the Sprites collection.
+ */
+function createCharacter(sID, sName, oData)
+{
+    // Step 1: Check for authorized player and replace special gfxID if needed
+    if(this.api.datacenter.Player.isAuthorized && oData.gfxID == ank.battlefield.datacenter.Sprite.ANGELS_OF_THE_WORLD_SPRITE_ID)
+    {
+        oData.gfxID = ank.battlefield.datacenter.Sprite.ANGELS_OF_THE_WORLD_REPLACEMENT_SPRITE_ID;
+    }
+
+    // Step 2: Retrieve existing sprite from Sprites collection or create new Character instance
+    var oCharacter = this.api.datacenter.Sprites.getItemAt(sID);
+    if(oCharacter == undefined)
+    {
+        oCharacter = new dofus.datacenter.Character(sID, ank.battlefield.mc.Sprite, dofus.Constants.CLIPS_PERSOS_PATH + oData.gfxID + ".swf", oData.cell, oData.dir, oData.gfxID, oData.title);
+        this.api.datacenter.Sprites.addItemAt(sID, oCharacter);
+    }
+
+    // Step 3: Initialize GameActionsManager and set basic properties (cell, scale, name)
+    oCharacter.GameActionsManager.init();
+    oCharacter.cellNum = Number(oData.cell);
+    oCharacter.scaleX = oData.scaleX;
+    oCharacter.scaleY = oData.scaleY;
+    oCharacter.name = sName;
+
+    // Step 4: Set appearance properties (colors, accessories, guild info)
+    oCharacter.Guild = Number(oData.spriteType);
+    oCharacter.Level = Number(oData.level);
+    oCharacter.Sex = oData.sex == undefined ? 1 : oData.sex;
+    oCharacter.color1 = oData.color1 != -1 ? Number("0x" + oData.color1) : oData.color1;
+    oCharacter.color2 = oData.color2 != -1 ? Number("0x" + oData.color2) : oData.color2;
+    oCharacter.color3 = oData.color3 != -1 ? Number("0x" + oData.color3) : oData.color3;
+    oCharacter.Aura = oData.aura == undefined ? 0 : oData.aura;
+    oCharacter.Merchant = oData.merchant != "1" ? false : true;
+    oCharacter.serverID = Number(oData.serverID);
+    oCharacter.alignment = oData.alignment;
+    oCharacter.rank = oData.rank;
+    oCharacter.mount = oData.mount;
+    oCharacter.isDead = oData.isDead == 1;
+    oCharacter.deathState = Number(oData.isDead);
+    oCharacter.deathCount = Number(oData.deathCount);
+    oCharacter.lvlMax = Number(oData.lvlMax);
+    oCharacter.pvpGain = Number(oData.pvpGain);
+    oCharacter.hasTtgCollection = oData.hasTtgCollection;
+    oCharacter.hasCandy = oData.hasCandy;
+    oCharacter.hasBuff = oData.hasBuff;
+    this.setSpriteAccessories(oCharacter, oData.accessories);
+
+    // Step 5: Configure combat stats if present (LP, AP, MP, resistances)
+    if(oData.LP != undefined)
+    {
+        oCharacter.LP = oData.LP;
+    }
+    if(oData.LPmax != undefined)
+    {
+        oCharacter.LPmax = oData.LPmax;
+    }
+    if(oData.AP != undefined)
+    {
+        oCharacter.AP = oData.AP;
+    }
+    if(oData.AP != undefined)
+    {
+        oCharacter.APinit = oData.AP;
+    }
+    if(oData.MP != undefined)
+    {
+        oCharacter.MP = oData.MP;
+    }
+    if(oData.MP != undefined)
+    {
+        oCharacter.MPinit = oData.MP;
+    }
+    if(oData.resistances != undefined)
+    {
+        oCharacter.resistances = oData.resistances;
+    }
+
+    oCharacter.Team = oData.team != undefined ? oData.team : null;
+    if(oData.emote != undefined && oData.emote.length != 0)
+    {
+        oCharacter.direction = ank.battlefield.utils.Pathfinding.convertHeightToFourDirection(oData.dir);
+        if(oData.emoteTimer != undefined && oData.emote.length != 0)
+        {
             oCharacter.startAnimationTimer = oData.emoteTimer;
-         }
-         oCharacter.startAnimation = "EmoteStatic" + oData.emote;
-      }
-      if(oData.guildName != undefined)
-      {
-         oCharacter.guildName = oData.guildName;
-      }
-      oCharacter.emblem = this.createGuildEmblem(oData.emblem);
-      if(oData.restrictions != undefined)
-      {
-         oCharacter.restrictions = _global.parseInt(oData.restrictions,36);
-      }
-      if(sID == this.api.datacenter.Player.ID)
-      {
-         this.updateLocalPlayerData(oCharacter);
-         if(!this.api.datacenter.Player.haveFakeAlignment)
-         {
+        }
+        oCharacter.startAnimation = "EmoteStatic" + oData.emote;
+    }
+    if(oData.guildName != undefined)
+    {
+        oCharacter.guildName = oData.guildName;
+    }
+    oCharacter.emblem = this.createGuildEmblem(oData.emblem);
+    if(oData.restrictions != undefined)
+    {
+        oCharacter.restrictions = _global.parseInt(oData.restrictions, 36);
+    }
+    if(sID == this.api.datacenter.Player.ID)
+    {
+        this.updateLocalPlayerData(oCharacter);
+        if(!this.api.datacenter.Player.haveFakeAlignment)
+        {
             this.api.datacenter.Player.alignment = oCharacter.alignment.clone();
-         }
-      }
-      return oCharacter;
-   }
+        }
+    }
+    return oCharacter;
+}
+
    function createCreature(sID, sName, oData)
    {
       var oCreature = this.api.datacenter.Sprites.getItemAt(sID);
@@ -524,27 +546,38 @@ class dofus.managers.CharactersManager extends dofus.utils.ApiElement
       var oSpell = new dofus.datacenter.Spell(nSpellID,nSpellLevel,sSpellEffects);
       return oSpell;
    }
-   function getNameFromData(sData)
-   {
-      var oResult = {};
-      var aNameParts = sData.split(",");
-      if(aNameParts.length == 2)
-      {
-         oResult.name = this.api.lang.getFullNameText(aNameParts);
-         oResult.type = "taxcollector";
-      }
-      else if(_global.isNaN(Number(sData)))
-      {
-         oResult.name = sData;
-         oResult.type = "player";
-      }
-      else
-      {
-         oResult.name = this.api.lang.getMonstersText(Number(sData)).n;
-         oResult.type = "monster";
-      }
-      return oResult;
-   }
+
+
+/**
+ * getNameFromData
+ * Purpose: Determines name and type from name data string
+ * Parameters: Name data string
+ * Data flow: Name string → Object with name and type properties
+ */
+function getNameFromData(sData)
+{
+    var oResult = {};
+
+    // Step: Parses string to determine if it's a tax collector, player, or monster name
+    var aNameParts = sData.split(",");
+    if(aNameParts.length == 2)
+    {
+        oResult.name = this.api.lang.getFullNameText(aNameParts);
+        oResult.type = "taxcollector";
+    }
+    else if(_global.isNaN(Number(sData)))
+    {
+        oResult.name = sData;
+        oResult.type = "player";
+    }
+    else
+    {
+        oResult.name = this.api.lang.getMonstersText(Number(sData)).n;
+        oResult.type = "monster";
+    }
+    return oResult;
+}
+
    function setSpriteAccessories(oSprite, sAccessories)
    {
       if(sAccessories.length != 0)
