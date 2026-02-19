@@ -12,6 +12,8 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
 {
    // Array – stores timestamps when game sprites left the map (used for disconnect debugging)
    var _aGameSpriteLeftHistory = [];
+
+   
    /**
     * Purpose:
     *   Construct a new GameIn handler and retain network/API references.
