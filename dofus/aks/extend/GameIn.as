@@ -3,14 +3,24 @@
  * Handles incoming server messages and creates/updates sprites on the battlefield based on server data
  *
  * In Sprite Creation from Server Data process
- * - The sprite creation process is primarily driven by `onMovement` which handles all sprite types (characters, monsters, NPCs, etc.)
+ * - The sprite creation process is primarily driven by `onMovement` and `onSpriteMovement` which handles all sprite types (characters, monsters, NPCs, etc.)
  * - Created sprites are stored in `api.datacenter.Sprites` before being added to the battlefield (GameIn.as:75)
  * - The `_aGameSpriteLeftHistory` field is only used for debugging disconnects when logging is enabled (GameIn.as:531-540)
  */
 
 class dofus.aks.extend.GameIn extends dofus.aks.Handler
 {
+   // Array – stores timestamps when game sprites left the map (used for disconnect debugging)
    var _aGameSpriteLeftHistory = [];
+   /**
+    * Purpose:
+    *   Construct a new GameIn handler and retain network/API references.
+    * Parameters:
+    *   oAKS – AKS network object for incoming messages.
+    *   oAPI – Central game API exposing datacenter, gfx, kernel, etc.
+    * Data flow:
+    *   References are stored on this instance for later callbacks; no return.
+    */
    function GameIn(oAKS, oAPI)
    {
       super.initialize(oAKS,oAPI);
@@ -599,8 +609,17 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
          }
       }
    }
+   /**
+    * Purpose:
+    *   Parse cell update data from the server and forward changes to the graphic layer.
+    * Parameters:
+    *   sExtraData – pipe-separated string of cell entries (cellNum;layer+data;walkable).
+    * Data flow:
+    *   Raw packet string → array of cell parts → api.gfx.updateCell per entry.
+    */
    function onCellData(sExtraData)
    {
+      // Step 1: split raw data into individual cell update lines
       var aDataLines = sExtraData.split("|");
       var nLineIdx = 0;
       while(nLineIdx < aDataLines.length)
@@ -614,8 +633,17 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
          nLineIdx = nLineIdx + 1;
       }
    }
+   /**
+    * Purpose:
+    *   Handle additions/removals of zones (spell areas, maps zones, etc.).
+    * Parameters:
+    *   sExtraData – string containing one or more zone instructions prefixed by +/-. 
+    * Data flow:
+    *   Packet → for each line determine add/remove → gfx.drawZone or clearZone.
+    */
    function onZoneData(sExtraData)
    {
+      // Step 1: breakup input into individual zone lines
       var aZoneLines = sExtraData.split("|");
       var nZoneIdx = 0;
       while(nZoneIdx < aZoneLines.length)
@@ -638,8 +666,17 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
          nZoneIdx = nZoneIdx + 1;
       }
    }
+   /**
+    * Purpose:
+    *   Add or remove external objects on map cells (items, rideable objects).
+    * Parameters:
+    *   sExtraData – string starting with + or - followed by semicolon-separated values.
+    * Data flow:
+    *   Determine add/remove flag → iterate object definitions → update/remove objects.
+    */
    function onCellObject(sExtraData)
    {
+      // Step 1: detect whether entries are additions (+) or removals (-)
       var bIsAdding = sExtraData.charAt(0) == "+";
       var aObjectLines = sExtraData.substr(1).split("|");
       var nObjectIdx = 0;
@@ -682,8 +719,17 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
          nObjectIdx = nObjectIdx + 1;
       }
    }
+   /**
+    * Purpose:
+    *   Update interactive frame states on objects (frame number, interactivity).
+    * Parameters:
+    *   sExtraData – pipe-separated lines containing cell;frame;interactive flag.
+    * Data flow:
+    *   Each line parsed → popup menus closed if needed → gfx.setObject2Frame/Interactive.
+    */
    function onFrameObject2(sExtraData)
    {
+      // Step 1: cache current popup menu for potential removal
       var oPopupMenu = ank.gapi.controls.PopupMenu.currentPopupMenu;
       var aFrameLines = sExtraData.split("|");
       var nLineIdx = 0;
@@ -706,8 +752,17 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
          nLineIdx = nLineIdx + 1;
       }
    }
+   /**
+    * Purpose:
+    *   Apply frame changes to external objects on cells.
+    * Parameters:
+    *   sExtraData – pipe-separated cell;frame pairs.
+    * Data flow:
+    *   Iterate each pair and call api.gfx.setObjectExternalFrame.
+    */
    function onFrameObjectExternal(sExtraData)
    {
+      // Step 1: split into lines
       var aFrameLines = sExtraData.split("|");
       var nLineIdx = 0;
       while(nLineIdx < aFrameLines.length)
@@ -719,8 +774,17 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
          nLineIdx = nLineIdx + 1;
       }
    }
+   /**
+    * Purpose:
+    *   Instantiate and apply a visual effect to target sprites.
+    * Parameters:
+    *   sExtraData – semicolon-separated effect definition (id;targets;delayMin;delayMax;...).
+    * Data flow:
+    *   Parse effect parameters → create Effect object → add to each target sprite.
+    */
    function onEffect(sExtraData)
    {
+      // Step 1: break definition into component values
       var aEffectData = sExtraData.split(";");
       var nEffectID = aEffectData[0];
       var aTargetIDs = aEffectData[1].split(",");
@@ -746,16 +810,34 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
          nTargetIdx = nTargetIdx + 1;
       }
    }
+   /**
+    * Purpose:
+    *   Remove all active effects from every sprite on the battlefield.
+    * Parameters:
+    *   sExtraData – unused (present for API consistency).
+    * Data flow:
+    *   Iterate over sprite registry → call terminateAllEffects on each.
+    */
    function onClearAllEffect(sExtraData)
    {
+      // Step 1: grab reference to all registered sprites
       var oAllSprites = this.api.datacenter.Sprites;
       for(var a in oAllSprites)
       {
          oAllSprites[a].EffectsManager.terminateAllEffects();
       }
    }
+   /**
+    * Purpose:
+    *   Handle the addition or removal of fight challenges and associated teams.
+    * Parameters:
+    *   sExtraData – string prefixed with + or -; first line contains challenge info.
+    * Data flow:
+    *   Parse header → create or remove Challenge object → manage team sprites.
+    */
    function onChallenge(sExtraData)
    {
+      // Step 1: determine action type (add/remove)
       var bIsAdding = sExtraData.charAt(0) == "+";
       var aChallengeLines = sExtraData.substr(1).split("|");
       var aFirstLineData = aChallengeLines.shift().split(";");
@@ -792,8 +874,17 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
          this.api.datacenter.Challenges.removeItemAt(nChallengeID);
       }
    }
+   /**
+    * Purpose:
+    *   Update the membership of an existing team sprite (players join/leave).
+    * Parameters:
+    *   sExtraData – pipe-separated lines; first value is team ID, subsequent ±player entries.
+    * Data flow:
+    *   Lookup team object → loop through entries → add or remove players accordingly.
+    */
    function onTeam(sExtraData)
    {
+      // Step 1: break input into lines and extract team ID
       var aTeamLines = sExtraData.split("|");
       var nTeamID = Number(aTeamLines.shift());
       var oTeam = dofus.datacenter.Team(this.api.datacenter.Sprites.getItemAt(nTeamID));
@@ -831,8 +922,17 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
       }
       oTeam.refreshSwordSprite();
    }
+   /**
+    * Purpose:
+    *   Toggle a specific fight option flag for a team sprite and update its overhead display.
+    * Parameters:
+    *   sExtraData – two chars of +/- and option type followed by team ID.
+    * Data flow:
+    *   Extract team ID/option → set property on team object → refresh overhead item.
+    */
    function onFightOption(sExtraData)
    {
+      // Step 1: isolate team identifier
       var sTeamID = sExtraData.substr(2);
       var oTeamSprite = this.api.datacenter.Sprites.getItemAt(sTeamID);
       if(oTeamSprite != undefined)
@@ -856,8 +956,17 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
          this.api.gfx.addSpriteOverHeadItem(sTeamID,"FightOptions",dofus.graphics.battlefield.FightOptionsOverHead,[oTeamSprite],undefined);
       }
    }
+   /**
+    * Purpose:
+    *   Clean up state when the local player leaves the map or fight.
+    * Parameters:
+    *   none
+    * Data flow:
+    *   Reset player info, unload UIs, restart game handler.
+    */
    function onLeave()
    {
+      // Step 1: clear current player reference
       this.api.datacenter.Game.currentPlayerID = undefined;
       this.api.ui.getUIComponent("Banner").hideRightPanel(true);
       this.api.ui.unloadUIComponent("Timeline");
@@ -871,8 +980,17 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
       oFightChallenge.cleanChallenge();
       this.aks.Game.create();
    }
+   /**
+    * Purpose:
+    *   Process end‑of‑fight results packet and kick off result parsing.
+    * Parameters:
+    *   sExtraData – full fight result string with duration, players, drops, etc.
+    * Data flow:
+    *   Validate build state → parse header values → delegate to parsePlayerData.
+    */
    function onEnd(sExtraData)
    {
+      // Step 1: if map is rebuilding, queue the end handler for later
       if(this.api.kernel.MapsServersManager.isBuilding)
       {
          this.addToQueue({object:this,method:this.onEnd,params:[sExtraData]});
@@ -911,8 +1029,25 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
       this.api.datacenter.Player.isDead = false;
       this.parsePlayerData(oFightResults,3,nSenderID,aResultLines,nFightType,nKamaDrop,eaFightDrop,false,false);
    }
+   /**
+    * Purpose:
+    *   Recursively parse a sequence of player result entries in a fight.
+    * Parameters:
+    *   oResults – accumulated results object to populate.
+    *   nStartIndex – index in the aTmp array where parsing should begin.
+    *   nSenderID – ID of the sprite that sent the packet (usually local player).
+    *   aTmp – array of semicolon‑separated player strings.
+    *   nFightType – type of fight (XP or honour etc.).
+    *   nKamaDrop – running total of dropped kamas.
+    *   eaFightDrop – extended array of item drops yet to distribute.
+    *   bAlreadyParsed – flag indicating local player info already handled.
+    *   bIsChest – whether next entry is treasure chest data.
+    * Data flow:
+    *   Process one line → update oResults or drops → either queue next call or finish.
+    */
    function parsePlayerData(oResults, nStartIndex, nSenderID, aTmp, nFightType, nKamaDrop, eaFightDrop, bAlreadyParsed, bIsChest)
    {
+      // Step 1: initialize local index pointer
       var nCurrentIdx = nStartIndex;
       var aPlayerDataParts = aTmp[nCurrentIdx].split(";");
       var oPlayerInfo = {};
@@ -1074,8 +1209,17 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
          this.onParseItemEnd(nSenderID,oResults,eaFightDrop,nKamaDrop);
       }
    }
+   /**
+    * Purpose:
+    *   Convert a comma‑separated list of itemID~qty pairs into Item objects.
+    * Parameters:
+    *   aItems – array of strings like "id~quantity".
+    * Data flow:
+    *   Iterate entries → parse id and quantity → instantiate Item and collect.
+    */
    function parseItems(aItems)
    {
+      // Step 1: prepare array for resulting Item objects
       var aResults = [];
       var nItemIdx = 0;
       while(nItemIdx < aItems.length)
@@ -1096,8 +1240,20 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
       }
       return aResults;
    }
+   /**
+    * Purpose:
+    *   Finalize fight results once all player lines have been parsed.
+    * Parameters:
+    *   nSenderID – ID of sender (for actions finish triggering).
+    *   oResults – populated fight results object.
+    *   eaFightDrop – aggregated drop items to distribute.
+    *   nKamaDrop – total dropped kamas.
+    * Data flow:
+    *   Distribute drops, signal fight termination, update UI/tips.
+    */
    function onParseItemEnd(nSenderID, oResults, eaFightDrop, nKamaDrop)
    {
+      // Step 1: if there are loose drops, allocate them to winners
       if(eaFightDrop.length)
       {
          var nItemsPerWinner = Math.ceil(eaFightDrop.length / oResults.winners.length);
@@ -1138,8 +1294,17 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
       }
       this.api.kernel.TipsManager.showNewTip(dofus.managers.TipsManager.TIP_FIGHT_ENDFIGHT);
    }
+   /**
+    * Purpose:
+    *   Attach or remove an extra visual clip to a list of sprites.
+    * Parameters:
+    *   sExtraData – clipName|id1;id2;...  where clipName="-" means remove.
+    * Data flow:
+    *   Determine clip path or removal flag → apply for each sprite ID.
+    */
    function onExtraClip(sExtraData)
    {
+      // Step 1: split header and ID list
       var aDataParts = sExtraData.split("|");
       var sClipName = aDataParts[0];
       var aSpriteIDs = aDataParts[1].split(";");
@@ -1158,8 +1323,17 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
          }
       }
    }
+   /**
+    * Purpose:
+    *   Trigger a soft disconnect and display the game over UI.
+    * Parameters:
+    *   none
+    * Data flow:
+    *   Call network disconnect → open GameOver component.
+    */
    function onGameOver()
    {
+      // Step 1: drop network connection gracefully
       this.api.network.softDisconnect();
       this.api.ui.loadUIComponent("GameOver","GameOver",undefined,{bAlwaysOnTop:true});
    }
@@ -1379,6 +1553,14 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
       oData.scaleY = nScaleY;
 
    }
+   /**
+    * Purpose:
+    *   Build a preconfigured visual effect used for sprite transitions.
+    * Parameters:
+    *   none
+    * Data flow:
+    *   Instantiate VisualEffect, set properties, and return it.
+    */
    function createTransitionEffect()
    {
       var oEffect = new ank.battlefield.datacenter.VisualEffect();
