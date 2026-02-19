@@ -1,8 +1,8 @@
 /**
- * # Class Purpose
+ * Class Purpose
  * Handles incoming server messages and creates/updates sprites on the battlefield based on server data
  *
- * # In Sprite Creation from Server Data process
+ * In Sprite Creation from Server Data process
  * - The sprite creation process is primarily driven by `onMovement` which handles all sprite types (characters, monsters, NPCs, etc.)
  * - Created sprites are stored in `api.datacenter.Sprites` before being added to the battlefield (GameIn.as:75)
  * - The `_aGameSpriteLeftHistory` field is only used for debugging disconnects when logging is enabled (GameIn.as:531-540)
