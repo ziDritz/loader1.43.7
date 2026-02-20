@@ -130,6 +130,7 @@ class ank.battlefield.SpriteHandler
    {
       return this._mcContainer["sprite" + sID];
    }
+
    /**
     * Add sprite to battlefield display
     * Purpose: Create and attach sprite MovieClip with proper depth and initialization
@@ -184,6 +185,7 @@ class ank.battlefield.SpriteHandler
          }
          oSprite.mc.filters = [new flash.filters.GlowFilter(16711680,1,6,6,1,1,true,false)];
       }
+   
    }
    /**
     * Add child sprite linked to parent sprite position

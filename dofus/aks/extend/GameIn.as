@@ -13,7 +13,7 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
    // Array – stores timestamps when game sprites left the map (used for disconnect debugging)
    var _aGameSpriteLeftHistory = [];
 
-   
+
    /**
     * Purpose:
     *   Construct a new GameIn handler and retain network/API references.
@@ -87,7 +87,7 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
 
                var sDirection = aData[1];
                var nBonus = Number(aData[2]);
-               var sOtherData1 = aData[3];
+               var sID = aData[3];
                var sOtherData2 = aData[4];
                var sSpeedOrColor = aData[5];
                var sGfxData = aData[6];
@@ -141,7 +141,7 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
 
                if(bIsRemoving)
                {
-                  var oOldSprite = this.api.datacenter.Sprites.getItemAt(sOtherData1);
+                  var oOldSprite = this.api.datacenter.Sprites.getItemAt(sID);
                   this.onSpriteMovement(false,oOldSprite);
                }
 
@@ -186,11 +186,11 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
                      }
                      if(sSpriteType == -1)
                      {
-                        oSprite = this.api.kernel.CharactersManager.createCreature(sOtherData1,sOtherData2,oCharData);
+                        oSprite = this.api.kernel.CharactersManager.createCreature(sID,sOtherData2,oCharData);
                      }
                      else
                      {
-                        oSprite = this.api.kernel.CharactersManager.createMonster(sOtherData1,sOtherData2,oCharData);
+                        oSprite = this.api.kernel.CharactersManager.createMonster(sID,sOtherData2,oCharData);
                      }
                      break;
                   case "-3":
@@ -211,10 +211,10 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
                      var oGfxInfo = this.sliptGfxData(sGfxData);
                      var aGfxList = oGfxInfo.gfx;
                      this.splitGfxForScale(aGfxList[0],oMonsterData);
-                     oSprite = this.api.kernel.CharactersManager.createMonsterGroup(sOtherData1,sOtherData2,oMonsterData);
+                     oSprite = this.api.kernel.CharactersManager.createMonsterGroup(sID,sOtherData2,oMonsterData);
                      if(this.api.kernel.OptionsManager.getOption("ViewAllMonsterInGroup") == true)
                      {
-                        var sMainMonsterID = sOtherData1;
+                        var sMainMonsterID = sID;
                         var nGfxIdx = 1;
                         while(nGfxIdx < aGfxList.length)
                         {
@@ -227,12 +227,12 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
                               oMonsterData.color3 = aColorData[2];
                               oMonsterData.dir = random(4) * 2 + 1;
                               oMonsterData.accessories = aData[9 + 2 * nGfxIdx];
-                              var sExtraMonsterID = sOtherData1 + "_" + nGfxIdx;
+                              var sExtraMonsterID = sID + "_" + nGfxIdx;
                               var oExtraMonster = this.api.kernel.CharactersManager.createMonsterGroup(sExtraMonsterID,undefined,oMonsterData);
                               var sParentID = sMainMonsterID;
                               if(random(3) != 0 && nGfxIdx != 1)
                               {
-                                 sParentID = sOtherData1 + "_" + (random(nGfxIdx - 1) + 1);
+                                 sParentID = sID + "_" + (random(nGfxIdx - 1) + 1);
                               }
                               var nLinkDir = random(8);
                               this.api.gfx.addLinkedSprite(sExtraMonsterID,sParentID,nLinkDir,oExtraMonster);
@@ -269,7 +269,7 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
                      oNPCData.accessories = aData[11];
                      oNPCData.extraClipID = !(aData[12] != undefined && !_global.isNaN(Number(aData[12]))) ? -1 : Number(aData[12]);
                      oNPCData.customArtwork = Number(aData[13]);
-                     oSprite = this.api.kernel.CharactersManager.createNonPlayableCharacter(sOtherData1,Number(sOtherData2),oNPCData);
+                     oSprite = this.api.kernel.CharactersManager.createNonPlayableCharacter(sID,Number(sOtherData2),oNPCData);
                      break;
                   case "-5":
                      var oOfflineCharData = {};
@@ -287,7 +287,7 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
                      oOfflineCharData.emblem = aData[12];
                      oOfflineCharData.offlineType = aData[13];
                      oOfflineCharData.characterID = aData[14];
-                     oSprite = this.api.kernel.CharactersManager.createOfflineCharacter(sOtherData1,sOtherData2,oOfflineCharData);
+                     oSprite = this.api.kernel.CharactersManager.createOfflineCharacter(sID,sOtherData2,oOfflineCharData);
                      break;
                   case "-6":
                      var oTaxCollectorData = {};
@@ -313,7 +313,7 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
                         oTaxCollectorData.emblem = aData[9];
                         oTaxCollectorData.isMine = !!Number(aData[10]);
                      }
-                     oSprite = this.api.kernel.CharactersManager.createTaxCollector(sOtherData1,sOtherData2,oTaxCollectorData);
+                     oSprite = this.api.kernel.CharactersManager.createTaxCollector(sID,sOtherData2,oTaxCollectorData);
                      break;
                   case "-7":
                   case "-8":
@@ -354,7 +354,7 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
                         oMutantData.showIsPlayer = false;
                         oMutantData.monsterID = sOtherData2;
                      }
-                     oSprite = this.api.kernel.CharactersManager.createMutant(sOtherData1,oMutantData);
+                     oSprite = this.api.kernel.CharactersManager.createMutant(sID,oMutantData);
                      break;
                   case "-9":
                      var oParkMountData = {};
@@ -367,7 +367,7 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
                      oParkMountData.ownerName = aData[7];
                      oParkMountData.level = aData[8];
                      oParkMountData.modelID = aData[9];
-                     oSprite = this.api.kernel.CharactersManager.createParkMount(sOtherData1,sOtherData2 == "" ? this.api.lang.getText("NO_NAME") : sOtherData2,oParkMountData);
+                     oSprite = this.api.kernel.CharactersManager.createParkMount(sID,sOtherData2 == "" ? this.api.lang.getText("NO_NAME") : sOtherData2,oParkMountData);
                      break;
                   case "-10":
                      var oPrismData = {};
@@ -379,7 +379,7 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
                      oPrismData.dir = sDirection;
                      oPrismData.level = aData[7];
                      oPrismData.alignment = new dofus.datacenter.Alignment(Number(aData[9]),Number(aData[8]));
-                     oSprite = this.api.kernel.CharactersManager.createPrism(sOtherData1,sOtherData2,oPrismData);
+                     oSprite = this.api.kernel.CharactersManager.createPrism(sID,sOtherData2,oPrismData);
                      break;
                   default:
                      var oPlayerCharData = {};
@@ -441,7 +441,7 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
                            }
                         }
                         oPlayerCharData.LPmax = aData[28];
-                        if(this.api.datacenter.Player.ID == sOtherData1)
+                        if(this.api.datacenter.Player.ID == sID)
                         {
                            this.api.datacenter.Player.LPmax = oPlayerCharData.LPmax;
                            this.api.datacenter.Player.LP = oPlayerCharData.LP;
@@ -500,17 +500,17 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
                      }
                      if(bIsRemoving)
                      {
-                        var aTransitionEffect = [sOtherData1,this.createTransitionEffect(),sCell,10];
+                        var aTransitionEffect = [sID,this.createTransitionEffect(),sCell,10];
                      }
                      var aAlignmentParts = sAlignmentData.split(",");
                      oPlayerCharData.alignment = new dofus.datacenter.Alignment(Number(aAlignmentParts[0]),Number(aAlignmentParts[1]));
                      oPlayerCharData.rank = new dofus.datacenter.Rank(Number(aAlignmentParts[2]));
                      oPlayerCharData.alignment.fallenAngelDemon = aAlignmentParts[4] == 1;
-                     if(aAlignmentParts.length > 3 && sOtherData1 != this.api.datacenter.Player.ID)
+                     if(aAlignmentParts.length > 3 && sID != this.api.datacenter.Player.ID)
                      {
                         if(this.api.lang.getAlignmentCanViewPvpGain(this.api.datacenter.Player.alignment.index,Number(oPlayerCharData.alignment.index)))
                         {
-                           var nPvpLevelDiff = Number(aAlignmentParts[3]) - _global.parseInt(sOtherData1);
+                           var nPvpLevelDiff = Number(aAlignmentParts[3]) - _global.parseInt(sID);
                            var nMinorLimit = this.api.lang.getConfigText("PVP_VIEW_BONUS_MINOR_LIMIT");
                            var nMinorPercent = this.api.lang.getConfigText("PVP_VIEW_BONUS_MINOR_LIMIT_PRC");
                            var nMajorLimit = this.api.lang.getConfigText("PVP_VIEW_BONUS_MAJOR_LIMIT");
@@ -535,7 +535,7 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
                            oPlayerCharData.pvpGain = nPvpGain;
                         }
                      }
-                     if(!this.api.datacenter.Game.isFight && (_global.parseInt(sOtherData1,10) != this.api.datacenter.Player.ID && ((this.api.datacenter.Player.alignment.index == 1 || this.api.datacenter.Player.alignment.index == 2) && ((oPlayerCharData.alignment.index == 1 || oPlayerCharData.alignment.index == 2) && (oPlayerCharData.alignment.index != this.api.datacenter.Player.alignment.index && (oPlayerCharData.rank.value && this.api.datacenter.Map.bCanAttack))))))
+                     if(!this.api.datacenter.Game.isFight && (_global.parseInt(sID,10) != this.api.datacenter.Player.ID && ((this.api.datacenter.Player.alignment.index == 1 || this.api.datacenter.Player.alignment.index == 2) && ((oPlayerCharData.alignment.index == 1 || oPlayerCharData.alignment.index == 2) && (oPlayerCharData.alignment.index != this.api.datacenter.Player.alignment.index && (oPlayerCharData.rank.value && this.api.datacenter.Map.bCanAttack))))))
                      {
                         if(this.api.datacenter.Player.rank.value > oPlayerCharData.rank.value)
                         {
@@ -550,17 +550,17 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
                      var aPlayerGfxList = oPlayerGfxInfo.gfx;
                      this.splitGfxForScale(aPlayerGfxList[0],oPlayerCharData);
                      oPlayerCharData.title = oTitle;
-                     oSprite = this.api.kernel.CharactersManager.createCharacter(sOtherData1,sOtherData2,oPlayerCharData);
+                     oSprite = this.api.kernel.CharactersManager.createCharacter(sID,sOtherData2,oPlayerCharData);
                      dofus.datacenter.Character(oSprite).isClear = false;
                      oSprite.allowGhostMode = bAllowGhost;
-                     var sCurrentParentID = sOtherData1;
+                     var sCurrentParentID = sID;
                      var nChildLinkDir = oPlayerGfxInfo.shape != "circle" ? 2 : 0;
                      var nGfxItemIdx = 1;
                      while(nGfxItemIdx < aPlayerGfxList.length)
                      {
                         if(aPlayerGfxList[nGfxItemIdx] != "")
                         {
-                           var sChildSpriteID = sOtherData1 + "_" + nGfxItemIdx;
+                           var sChildSpriteID = sID + "_" + nGfxItemIdx;
                            var oGfxScaleData = {};
                            this.splitGfxForScale(aPlayerGfxList[nGfxItemIdx],oGfxScaleData);
                            var oChildSprite = new ank.battlefield.datacenter.Sprite(sChildSpriteID,ank.battlefield.mc.Sprite,dofus.Constants.CLIPS_PERSOS_PATH + oGfxScaleData.gfxID + ".swf");
@@ -1555,6 +1555,8 @@ class dofus.aks.extend.GameIn extends dofus.aks.Handler
       oData.scaleY = nScaleY;
 
    }
+
+   
    /**
     * Purpose:
     *   Build a preconfigured visual effect used for sprite transitions.

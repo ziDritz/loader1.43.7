@@ -76,16 +76,16 @@ class ank.battlefield.datacenter.Sprite extends Object
    var bInCreaturesMode = false;
    var _bIsInvisibleInFight = false;
 
-/**
- * Sprite
- * Purpose: Initializes a Sprite with server-provided identifiers and initial state.
- * Parameters:
- * `nID`: Server-sent unique sprite ID.
- * `fClipClass`: Visual clip class (typically `ank.battlefield.mc.Sprite`).
- * `sGfxFile`: Graphics SWF path derived from server gfxID.
- * `nCellNum`: Initial map cell number.
- * `nDir`: Initial direction (defaults to 1 if undefined).
- */
+   /**
+    * Sprite
+    * Purpose: Initializes a Sprite with server-provided identifiers and initial state.
+    * Parameters:
+    * `nID`: Server-sent unique sprite ID.
+    * `fClipClass`: Visual clip class (typically `ank.battlefield.mc.Sprite`).
+    * `sGfxFile`: Graphics SWF path derived from server gfxID.
+    * `nCellNum`: Initial map cell number.
+    * `nDir`: Initial direction (defaults to 1 if undefined).
+    */
    function Sprite(nID, fClipClass, sGfxFile, nCellNum, nDir)
    {
       super();
@@ -93,56 +93,56 @@ class ank.battlefield.datacenter.Sprite extends Object
    }
 
 
-/**
- * initialize
- * Purpose: Sets core properties and runtime structures from creation parameters.
- * Parameters: Same as constructor.
- * Data flow: Parameters populate instance fields; sequencer and event system prepared for later rendering and animation.
- */
-function initialize(sID, fClipClass, sGfxFile, nCellNum, nDir)
-{
-    // Step 1: Assign id, clipClass, _sGfxFile
-    this.id = sID;
-    this.clipClass = fClipClass;
-    this._sGfxFile = sGfxFile;
+   /**
+    * initialize
+    * Purpose: Sets core properties and runtime structures from creation parameters.
+    * Parameters: Same as constructor.
+    * Data flow: Parameters populate instance fields; sequencer and event system prepared for later rendering and animation.
+    */
+   function initialize(sID, fClipClass, sGfxFile, nCellNum, nDir)
+   {
+      // Step 1: Assign id, clipClass, _sGfxFile
+      this.id = sID;
+      this.clipClass = fClipClass;
+      this._sGfxFile = sGfxFile;
 
-    // Step 2: Call refreshGfxFileName to extract filename from path
-    this.refreshGfxFileName();
+      // Step 2: Call refreshGfxFileName to extract filename from path
+      this.refreshGfxFileName();
 
-    // Step 3: Set _nCellNum and _nDirection (default to 1 if undefined)
-    this._nCellNum = Number(nCellNum);
-    this._nDirection = nDir != undefined ? Number(nDir) : 1;
+      // Step 3: Set _nCellNum and _nDirection (default to 1 if undefined)
+      this._nCellNum = Number(nCellNum);
+      this._nDirection = nDir != undefined ? Number(nDir) : 1;
 
-    // Step 4: Create _oSequencer with 1000ms interval
-    this._oSequencer = new ank.utils.Sequencer(1000);
+      // Step 4: Create _oSequencer with 1000ms interval
+      this._oSequencer = new ank.utils.Sequencer(1000);
 
-    // Step 5: Initialize flags: _bInMove, _bVisible, _bClear
-    this._bInMove = false;
-    this._bVisible = true;
-    this._bClear = false;
+      // Step 5: Initialize flags: _bInMove, _bVisible, _bClear
+      this._bInMove = false;
+      this._bVisible = true;
+      this._bClear = false;
 
-    // Step 6: Initialize _eoLinkedChilds and enable event dispatching
-    this._eoLinkedChilds = new ank.utils.ExtendedObject();
-    mx.events.EventDispatcher.initialize(this);
+      // Step 6: Initialize _eoLinkedChilds and enable event dispatching
+      this._eoLinkedChilds = new ank.utils.ExtendedObject();
+      mx.events.EventDispatcher.initialize(this);
 
-    // Step 7: Initialize _states object and record _nCreationInstant
-    this._states = {};
-    this._nCreationInstant = getTimer();
-}
+      // Step 7: Initialize _states object and record _nCreationInstant
+      this._states = {};
+      this._nCreationInstant = getTimer();
+   }
 
 
-/**
- * refreshGfxFileName
- * Purpose: Derives the gfx filename from the full gfx path for identification.
- * Data flow: _sGfxFile → _sGfxFileName used by rendering checks (e.g., invader filtering).
- */
-function refreshGfxFileName()
-{
-    // Step 1: Split _sGfxFile by "." then by "/" to isolate the last segment
-    var _aPathSegments = this._sGfxFile.split(".")[0].split("/");
-    // Step 2: Store result in _sGfxFileName
-    this._sGfxFileName = _aPathSegments[_aPathSegments.length - 1];
-}
+   /**
+    * refreshGfxFileName
+    * Purpose: Derives the gfx filename from the full gfx path for identification.
+    * Data flow: _sGfxFile → _sGfxFileName used by rendering checks (e.g., invader filtering).
+    */
+   function refreshGfxFileName()
+   {
+      // Step 1: Split _sGfxFile by "." then by "/" to isolate the last segment
+      var _aPathSegments = this._sGfxFile.split(".")[0].split("/");
+      // Step 2: Store result in _sGfxFileName
+      this._sGfxFileName = _aPathSegments[_aPathSegments.length - 1];
+   }
 
    function isLocalPlayer(api)
    {
