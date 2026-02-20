@@ -36,6 +36,8 @@ class ank.battlefield.SpriteHandler
    static var _bPlayerSpritesHidden = false;
    /** @type Boolean - Global flag tracking whether monster tooltips are currently displayed (static) */
    static var _bShowMonstersTooltip = false;
+
+
    /**
     * Constructor - Initializes SpriteHandler with battlefield display references
     * @param b:MovieClip - Battlefield display container (mcBattlefield)
@@ -110,6 +112,7 @@ class ank.battlefield.SpriteHandler
    {
       return this._oSprites;
    }
+
    /**
     * Get sprite data object by ID
     * Purpose: Retrieve specific sprite data for manipulation
@@ -120,6 +123,7 @@ class ank.battlefield.SpriteHandler
    {
       return this._oSprites.getItemAt(sID);
    }
+   
    /**
     * Get sprite MovieClip instance by ID
     * Purpose: Access sprite display object for rendering operations
